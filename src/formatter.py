@@ -75,8 +75,10 @@ class Formatter:
         return newLog
 
     def printRace(self, pattern):
+        totalMS = 0
         res = []
         for c in pattern:
+            totalMS += c[1]
             if not c[2]:
                 print(f"add {c}")
                 res.append(c[0])
@@ -85,4 +87,8 @@ class Formatter:
                 for character in c[0]:
                     index = len(res) - res[::-1].index(character) - 1
                     del res[index]
-        print("".join(res))
+        stringRes = "".join(res)
+        print(stringRes)
+        mins = totalMS / 60000
+        words = len(stringRes) / 5
+        print(f"words: {words}\nmins: {mins}\nWPM: {round(words / mins, 2)}")
