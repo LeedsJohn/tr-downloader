@@ -92,6 +92,14 @@ class Formatter:
             i -= 1
 
     def printRace(self, pattern):
+        def delChar(text, char):
+            for i in range(len(text) - 1, -1, -1):
+                if char in text[i]:
+                    text[i] = "".join(filter(lambda x: x != char, char))
+                    if not text[i]:
+                        del text[i]
+                    return text
+
         totalMS = 0
         res = []
         for c in pattern:
@@ -102,8 +110,7 @@ class Formatter:
             else:
                 print(f"DELETING {c}")
                 for character in c[0]:
-                    index = len(res) - res[::-1].index(character) - 1
-                    del res[index]
+                    delChar(res, character)
         stringRes = "".join(res)
         print(stringRes)
         mins = totalMS / 60000
