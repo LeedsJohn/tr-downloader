@@ -13,6 +13,7 @@ class Formatter:
         typingLog = self.splitTypingLog(typingLog)
         typingLog = self.group(typingLog)
         typingLog = self.splitDoubles(typingLog)
+        typingLog = self.cropEnd(text[-1], typingLog)
         self.printRace(typingLog)
 
     def splitTypingLog(self, typingLog):
@@ -51,7 +52,7 @@ class Formatter:
         Takes the number of ms and raw character information and turns it to
         [character(s) typed, ms, deleted (bool)]
         """
-        if not ms.isnumeric(): # TODO check this
+        if not ms.isnumeric():  # TODO check this
             ms == "0"
         ms = int(ms)
         typed = re.search("^\d{1,2}\+", char)
@@ -73,6 +74,22 @@ class Formatter:
             else:
                 newLog.append(c)
         return newLog
+
+    def cropEnd(self, lastChar, log):
+        """
+        Cuts the last letter from the typing log if there is 
+        an extra character typed.
+        Example: https://data.typeracer.com/pit/result?id=|tr:professorxwing|5942
+        """
+        i = len(log) - 1
+        while i >= 0:
+            if lastChar not in log[i][0]:
+                log.pop()
+            else:
+                endIndex = log[i][0].find(lastChar)
+                log[i][0] = log[i][0][:endIndex + 1]
+                return log
+            i -= 1
 
     def printRace(self, pattern):
         totalMS = 0
