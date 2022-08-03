@@ -32,18 +32,35 @@ class Formatter:
         Takes string typingLog and splits it while accounting for typed / 
         deleted commas.
         """
-        splitLog = []
-        cur = ""
-        for i, c in enumerate(typingLog[:-1]):
-            if c != "," or (typingLog[i - 1] in "+-" and\
-                    typingLog[i - 1] != typingLog[i - 2]):
-                cur += c
+        splitLog = typingLog.split(",")
+        i = 1
+        while i < len(splitLog):
+            if not splitLog[i]:
+                # empty list indicates comma
+                splitLog[i - 1] += ","
+                del splitLog[i]
+            elif not splitLog[i - 1].isnumeric() and not splitLog[i].isnumeric():
+                # two non numbers means it was split down the middle
+                splitLog[i - 1] += f",{splitLog[i]}"
+                del splitLog[i]
+            elif splitLog[i].isnumeric() and splitLog[i - 1].isnumeric():
+                # two integers in a row indicates a character count mark
+                del splitLog[i - 1:i + 1]
             else:
-                splitLog.append(cur)
-                cur = ""
-        splitLog.append(cur + typingLog[-1])
+                i += 1
         return splitLog
-
+#        splitLog = []
+#        cur = ""
+#        for i, c in enumerate(typingLog[:-1]):
+#            if c != "," or (typingLog[i - 1] in "+-" and\
+#                    typingLog[i - 1] != typingLog[i - 2]):
+#                cur += c
+#            else:
+#                splitLog.append(cur)
+#                cur = ""
+#        splitLog.append(cur + typingLog[-1])
+#        return splitLog
+#
     def group(self, typingLog):
         """
         Splits the typing log into a list in the format
@@ -105,14 +122,24 @@ class Formatter:
         def delChar(text, char):
             for i in range(len(text) - 1, -1, -1):
                 if char in text[i]:
-                    text[i] = "".join(filter(lambda x: x != char, char))
-                    if not text[i]:
+                    print(f"deleting {char} from {text[i]}")
+                    if len(text[i]) != 1:
+                        index = text[i].rfind(char)
+                        if index == 0:
+                            text[i] = text[i][1:]
+                        elif index == len(text[i]) - 1:
+                            text[i] = text[i][:-1]
+                        else:
+                            text[i] = text[i][:i] + text[i][i + 1:]
+                        print(f"len > 1 - new text: {text[i]}")
+                    else: 
+                        print("Deleting whole thing")
                         del text[i]
-                    return text
-
+                    return
         totalMS = 0
         res = []
         for c in pattern:
+            print("".join(res))
             totalMS += c[1]
             if not c[2]:
                 print(f"add {c}")
