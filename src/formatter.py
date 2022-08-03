@@ -70,7 +70,14 @@ class Formatter:
         prev = ""
         for item in typingLog:
             if not item.isnumeric():
-                groupings.append(self.getCharacter(prev, item))
+                group = self.getCharacter(prev, item)
+                if group[0] != "*#*":
+                    groupings.append(group)
+                else:
+                    # highlight + replace - delete last character of previous word
+                    group[0] = groupings[-1][0][-1]
+                    groupings.append(group[:3])
+                    groupings.append(group[3:])
             prev = item
         return groupings
 
@@ -78,13 +85,28 @@ class Formatter:
         """
         Takes the number of ms and raw character information and turns it to
         [character(s) typed, ms, deleted (bool)]
+        NOTE: Highlighting one character and replacing it looks weird
+        (ex: view-source:https://data.typeracer.com/pit/result?id=|tr:hi_i_am_epic|1140)
+        "1$l"
+        I am assuming this to mean delete the last character and add the letter
+        after the $. This will not break if the player highlights a character
+        that is not the most recently typed one, but that is so stupid that
+        I am not going to account for it right now.
+        This special case is indicated by the 0th index being "*#*"
         """
         if not ms.isnumeric():  # TODO check this
             ms == "0"
         ms = int(ms)
         typed = re.search("^\d{1,2}\+", char)
+        replace = re.search("^\d{1,2}\$", char)
         if typed:
             return [char[typed.span()[1]:], ms, False]
+        if replace:
+            if ms % 2 == 0:
+                msDel, msAdd = ms // 2, ms // 2
+            else:
+                msDel, msAdd = (ms // 2 + 1), ms // 2
+            return ["*#*", msDel, True, char[replace.span()[1]:], msAdd, False]
         else:
             return ["".join(re.split("\d{1,2}\-", char)), ms, True]
 
@@ -122,7 +144,6 @@ class Formatter:
         def delChar(text, char):
             for i in range(len(text) - 1, -1, -1):
                 if char in text[i]:
-                    print(f"deleting {char} from {text[i]}")
                     if len(text[i]) != 1:
                         index = text[i].rfind(char)
                         if index == 0:
@@ -131,15 +152,12 @@ class Formatter:
                             text[i] = text[i][:-1]
                         else:
                             text[i] = text[i][:i] + text[i][i + 1:]
-                        print(f"len > 1 - new text: {text[i]}")
                     else: 
-                        print("Deleting whole thing")
                         del text[i]
                     return
         totalMS = 0
         res = []
         for c in pattern:
-            print("".join(res))
             totalMS += c[1]
             if not c[2]:
                 print(f"add {c}")
