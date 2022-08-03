@@ -10,27 +10,24 @@ import re
 
 class Formatter:
     def format(self, text, typingLog):
-        typingLog = self.splitTypingLog(typingLog)
-        typingLog = self.group(typingLog)
-        typingLog = self.splitDoubles(typingLog)
-        typingLog = self.cropEnd(text[-1], typingLog)
-        self.printRace(typingLog)
+        typingLog = splitTypingLog(typingLog)
+
+        # self.printRace(typingLog)
 
     def splitTypingLog(self, typingLog):
         """
-        Splits the typing log into a list of [ms, {int}+/-{char}]. There will still be extra characters.
+        Takes string typingLog and splits it while accounting for typed / 
+        deleted commas.
         """
         splitLog = []
         cur = ""
         for i, c in enumerate(typingLog[:-1]):
-            if c == "," and typingLog[i + 1] != ",":
-                # add in comma if there's no character
-                if cur[-1] in "-+" and cur[-2] not in "-+":
-                    cur += ","
+            if c != "," or (typingLog[i - 1] in "+-" and\
+                    typingLog[i - 1] != typingLog[i - 2]):
+                cur += c
+            else:
                 splitLog.append(cur)
                 cur = ""
-            else:
-                cur += c
         splitLog.append(cur + typingLog[-1])
         return splitLog
 
