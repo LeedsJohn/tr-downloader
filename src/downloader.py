@@ -21,7 +21,6 @@ class Downloader:
         url = f"https://data.typeracer.com/pit/result?id=|tr:{username}|{raceIndex}"
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser")
-
         raceText = soup.find(class_="fullTextStr").text
         typingLog = self.findTypingLog(soup)
         return [raceText, typingLog]
@@ -35,6 +34,9 @@ class Downloader:
                 end = text.rfind(",")
                 return text[beginning:end]
 
-
-bruh = Downloader()
-bruh.download("nothisisjohn", 14975)
+    def findDate(self, soup):
+        prev = ""
+        for td in soup.findAll("td"):
+            if prev == "Date":
+                return td.text.strip()
+            prev = td.text
