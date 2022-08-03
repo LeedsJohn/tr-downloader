@@ -6,13 +6,26 @@ formatter.py
 Contains class formatter. Converts a race text and typing log into something more usable.
 """
 import re
-
+from codecs import decode 
 
 class Formatter:
     def format(self, text, typingLog):
-        typingLog = splitTypingLog(typingLog)
+        typingLog = self.removeUnicode(typingLog)
+        typingLog = self.splitTypingLog(typingLog)
+        typingLog = self.group(typingLog)
+        typingLog = self.splitDoubles(typingLog)
+        typingLog = self.cropEnd(text[-1], typingLog)
+        self.printRace(typingLog)
 
-        # self.printRace(typingLog)
+    def removeUnicode(self, typingLog):
+        """
+        Unicode gets mangled sometimes - example: 
+        https://data.typeracer.com/pit/result?id=|tr:poem|145006
+        (\\u00eo)
+        This function decodes this to utf-8
+        """
+        return decode(typingLog, "unicode_escape")
+
 
     def splitTypingLog(self, typingLog):
         """
