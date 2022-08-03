@@ -36,7 +36,13 @@ class Downloader:
 
     def findDate(self, soup):
         prev = ""
-        for td in soup.findAll("td"):
+        for td in soup.find_all("td"):
             if prev == "Date":
                 return td.text.strip()
             prev = td.text
+
+    def findTextID(self, soup):
+        for link in soup.find_all("a"):
+            text = link.get('href')
+            if "text_info?id=" in text:
+                return int(text[13:])
