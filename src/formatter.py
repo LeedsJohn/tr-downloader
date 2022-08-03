@@ -49,18 +49,7 @@ class Formatter:
             else:
                 i += 1
         return splitLog
-#        splitLog = []
-#        cur = ""
-#        for i, c in enumerate(typingLog[:-1]):
-#            if c != "," or (typingLog[i - 1] in "+-" and\
-#                    typingLog[i - 1] != typingLog[i - 2]):
-#                cur += c
-#            else:
-#                splitLog.append(cur)
-#                cur = ""
-#        splitLog.append(cur + typingLog[-1])
-#        return splitLog
-#
+    
     def group(self, typingLog):
         """
         Splits the typing log into a list in the format
