@@ -98,4 +98,5 @@ class Downloader:
         """
         def wpm(time, length):
             return (length / 5) / (time / 60000)
-        return [wpm(time, textLen), wpm(time - firstCharTime, textLen - 1)]
+        return [round(wpm(time, textLen), 2),
+                round(wpm(time - firstCharTime, textLen - 1), 2)]
