@@ -6,13 +6,10 @@ main.py
 Main file for Type Racer downloader
 """
 import downloader as dl
-import formatter as fm
 
 def main():
     downloader = dl.Downloader()
-    formatter = fm.Formatter()
-    text, typingLog = downloader.download("hi_i_am_epic", 1138)
-    formatter.format(text, typingLog)
+    print(downloader.download("flaneur", 26183))
 
 
 if __name__ == "__main__":
