@@ -41,11 +41,11 @@ class Downloader:
         typingLog = self.formatter.format(raceText, typingLog)
         date = self.findDate(soup)
         textID = self.findTextID(soup)
-        time = "UNIMPLEMENTED"
+        time = self.findTime(typingLog)
         accuracy = self.findAccuracy(soup)
         registeredSpeed = self.findRegisteredSpeed(soup)
-        unlagSpeed = "UNIMPLEMENTED"
-        adjustSpeed = "UNIMPLEMENTED"
+        unlagSpeed, adjustSpeed = self.findSpeeds(time, len(raceText),
+                typingLog[0][1])
         return {"textID": textID, "date": date, "accuracy": accuracy, 
                 "registeredSpeed": registeredSpeed, "unlagSpeed": unlagSpeed,
                 "adjustSpeed": adjustSpeed, "time": time, "text": raceText,
@@ -84,3 +84,18 @@ class Downloader:
             if prev == "Accuracy":
                 return int("".join([c for c in td.text if c.isdigit()])) / 1000
             prev = td.text
+
+    def findTime(self, log):
+        time = 0
+        for e in log:
+            time += e[1]
+        return time
+
+    def findSpeeds(self, time, textLen, firstCharTime):
+        """
+        Returns a list
+        [unlagged speed, adjusted speed]
+        """
+        def wpm(time, length):
+            return (length / 5) / (time / 60000)
+        return [wpm(time, textLen), wpm(time - firstCharTime, textLen - 1)]
