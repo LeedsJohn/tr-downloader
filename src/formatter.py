@@ -4,6 +4,10 @@ formatter.py
 7/25/2022
 
 Contains class formatter. Converts a race text and typing log into something more usable.
+Format of typing log:
+    [[char(s) typed, ms, typed / deleted, typo], ...]
+    Index 2 will be 1 if the character was typed, 0 if deleted
+    Index 3 will be 1 if the stroke was correct, 0 if it was a typo
 """
 import re
 from codecs import decode 
