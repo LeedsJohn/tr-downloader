@@ -7,9 +7,12 @@ Contains a class to download TypeRacer races.
 """
 import requests
 from bs4 import BeautifulSoup
-
+import formatter as fm
 
 class Downloader:
+    def __init__(self):
+        self.formatter = fm.Formatter()
+
     def download(self, username, raceIndex):
         """
         Download a Type Racer race
@@ -24,7 +27,7 @@ class Downloader:
         registeredSpeed: The speed registered to Type Racer
         accuracy: The accuracy registered to Type Racer
         unlagSpeed: The true speed of the race without latency
-        adjustedSpeed: The speed of the race accounting for start time
+        adjustSpeed: The speed of the race accounting for start time
 
         Parameters:
             username (str): the username of the player
@@ -35,9 +38,18 @@ class Downloader:
         soup = BeautifulSoup(page.content, "html.parser")
         raceText = soup.find(class_="fullTextStr").text
         typingLog = self.findTypingLog(soup)
-        print(self.findRegisteredSpeed(soup))
-        print(self.findAccuracy(soup))
-        return [raceText, typingLog]
+        typingLog = self.formatter.format(raceText, typingLog)
+        date = self.findDate(soup)
+        textID = self.findTextID(soup)
+        time = "UNIMPLEMENTED"
+        accuracy = self.findAccuracy(soup)
+        registeredSpeed = self.findRegisteredSpeed(soup)
+        unlagSpeed = "UNIMPLEMENTED"
+        adjustSpeed = "UNIMPLEMENTED"
+        return {"textID": textID, "date": date, "accuracy": accuracy, 
+                "registeredSpeed": registeredSpeed, "unlagSpeed": unlagSpeed,
+                "adjustSpeed": adjustSpeed, "time": time, "text": raceText,
+                "typedText": typingLog}
 
     def findTypingLog(self, soup):
         scripts = soup.find_all('script')
