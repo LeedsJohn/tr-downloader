@@ -21,7 +21,8 @@ class Downloader:
         missingCount = 0
         while raceNum <= endIndex:
             print(f"{'-'*16}\n{raceNum}")
-            if raceNum in raceLogs:
+            if str(raceNum) in raceLogs:
+                raceNum += 1
                 continue
             info = self.getInfo(username, raceNum)
             if info == "Missing":
@@ -141,4 +142,4 @@ class Downloader:
 
     def saveRaceLogs(self, username, raceLogs):
         with open(f"{username}.json", "w") as f:
-            json.dump(raceLogs, f, indent=4)
+            json.dump(raceLogs, f)
