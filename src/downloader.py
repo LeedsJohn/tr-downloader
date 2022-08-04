@@ -7,13 +7,44 @@ Contains a class to download TypeRacer races.
 """
 import requests
 from bs4 import BeautifulSoup
+import time
+import json
 import formatter as fm
 
 class Downloader:
     def __init__(self):
         self.formatter = fm.Formatter()
+    
+    def download(self, username, startIndex, endIndex):
+        raceLogs = self.openRaceLogs(username)
+        raceNum = startIndex
+        missingCount = 0
+        while raceNum <= endIndex:
+            print(f"{'-'*16}\n{raceNum}")
+            if raceNum in raceLogs:
+                continue
+            info = self.getInfo(username, raceNum)
+            if info == "Missing":
+                missingCount += 1
+                raceNum += 1
+                if missingCount == 10:
+                    # end if 10 consecutive missing races
+                    break
+            else:
+                missingCount = 0
 
-    def download(self, username, raceIndex):
+            print(f"Text: {info['text'][:min(100, len(info['text']))]}")
+            print(f"Speed: {info['unlagSpeed']}, Accuracy: {info['accuracy']}")
+            print(f"{info['date']}")
+            raceLogs[raceNum] = info
+            if raceNum % 25 == 0:
+                self.saveRaceLogs(username, raceLogs)
+            raceNum += 1
+            time.sleep(2.01)
+        self.saveRaceLogs(username, raceLogs)
+
+
+    def getInfo(self, username, raceIndex):
         """
         Download a Type Racer race
         Returns a dictionary containing with the following keys:
@@ -22,7 +53,6 @@ class Downloader:
         text: The text that was typed
         typedText: List in the form ["char typed", ms, add or delete, typo]
             See Formatter.py for more information
-        raceNum: The race number of the race
         time: The total amount of time the race took (ms)
         registeredSpeed: The speed registered to Type Racer
         accuracy: The accuracy registered to Type Racer
@@ -100,3 +130,15 @@ class Downloader:
             return (length / 5) / (time / 60000)
         return [round(wpm(time, textLen), 2),
                 round(wpm(time - firstCharTime, textLen - 1), 2)]
+    
+    def openRaceLogs(self, username): 
+        try:
+            with open(f"{username}.json", "r") as f:
+                raceLog = json.load(f)
+        except:
+            raceLog = {}
+        return raceLog
+
+    def saveRaceLogs(self, username, raceLogs):
+        with open(f"{username}.json", "w") as f:
+            json.dump(raceLogs, f, indent=4)

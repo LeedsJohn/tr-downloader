@@ -9,7 +9,7 @@ import downloader as dl
 
 def main():
     downloader = dl.Downloader()
-    print(downloader.download("flaneur", 26183))
+    downloader.download("nothisisjohn", 14900, 15023)
 
 
 if __name__ == "__main__":
