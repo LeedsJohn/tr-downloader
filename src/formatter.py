@@ -19,9 +19,9 @@ class Formatter:
         typingLog = self.group(typingLog)
         typingLog = self.splitDoubles(typingLog)
         typingLog = self.cropEnd(text[-1], typingLog)
+        typingLog = self.separate(typingLog)
         typingLog = self.addTypos(text, typingLog)
         return typingLog
-#        self.printRace(typingLog)
 
     def removeUnicode(self, typingLog):
         """
@@ -134,6 +134,26 @@ class Formatter:
                 log[i][0] = log[i][0][:endIndex + 1]
                 return log
             i -= 1
+
+    def separate(self, typingLog):
+        """
+        Separates entries that are combined
+        ex: [['es', 77, 1], ...]
+                     VVV
+            [['e', 77, 1], ['s', 0, 1]]
+        """
+        newLog = []
+        for e in typingLog:
+            if len(e[0]) == 1:
+                newLog.append(e)
+            else:
+                extraChars = e[0][1:]
+                typed = e[2]
+                e[0] = e[0][:1]
+                newLog.append(e)
+                for c in extraChars:
+                    newLog.append([c, 0, typed])
+        return newLog
 
     def addTypos(self, text, log):
         """
