@@ -15,7 +15,9 @@ class Formatter:
         typingLog = self.group(typingLog)
         typingLog = self.splitDoubles(typingLog)
         typingLog = self.cropEnd(text[-1], typingLog)
-        self.printRace(typingLog)
+        typingLog = self.addTypos(text, typingLog)
+        return typingLog
+#        self.printRace(typingLog)
 
     def removeUnicode(self, typingLog):
         """
@@ -73,7 +75,7 @@ class Formatter:
     def getCharacter(self, ms, char):
         """
         Takes the number of ms and raw character information and turns it to
-        [character(s) typed, ms, deleted (bool)]
+        [character(s) typed, ms, typed/deleted (1/0)]
         NOTE: Highlighting one character and replacing it looks weird
         (ex: view-source:https://data.typeracer.com/pit/result?id=|tr:hi_i_am_epic|1140)
         "1$l"
@@ -89,15 +91,15 @@ class Formatter:
         typed = re.search("^\d{1,2}\+", char)
         replace = re.search("^\d{1,2}\$", char)
         if typed:
-            return [char[typed.span()[1]:], ms, False]
+            return [char[typed.span()[1]:], ms, 1]
         if replace:
             if ms % 2 == 0:
                 msDel, msAdd = ms // 2, ms // 2
             else:
                 msDel, msAdd = (ms // 2 + 1), ms // 2
-            return ["*#*", msDel, True, char[replace.span()[1]:], msAdd, False]
+            return ["*#*", msDel, 0, char[replace.span()[1]:], msAdd, 1]
         else:
-            return ["".join(re.split("\d{1,2}\-", char)), ms, True]
+            return ["".join(re.split("\d{1,2}\-", char)), ms, 0]
 
     def splitDoubles(self, log):
         """
@@ -128,6 +130,39 @@ class Formatter:
                 log[i][0] = log[i][0][:endIndex + 1]
                 return log
             i -= 1
+
+    def addTypos(self, text, log):
+        """
+        Adds in the typo indicator to each entry
+        1 if the character was properly typed / deleted
+        0 if the character should not have been typed / deleted
+        """
+        text = list(text)
+        typed = []
+        def delChar(text, char):
+            for i in range(len(text) - 1, -1, -1):
+                if char in text[i]:
+                    if len(text[i]) != 1:
+                        index = text[i].rfind(char)
+                        if index == 0:
+                            text[i] = text[i][1:]
+                        elif index == len(text[i]) - 1:
+                            text[i] = text[i][:-1]
+                        else:
+                            text[i] = text[i][:i] + text[i][i + 1:]
+                    else: 
+                        del text[i]
+                    return
+
+        for i, c in enumerate(log):
+            if c[2]:
+                typed.append(c[0])
+                log[i].append(1 if typed == text[:len(typed)] else 0)
+            else:
+                log[i].append(1 if typed != text[:len(typed)] else 0)
+                for character in c[0]:
+                    delChar(typed, character)
+        return log
 
     def printRace(self, pattern):
         def delChar(text, char):
