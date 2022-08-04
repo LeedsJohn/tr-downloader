@@ -82,5 +82,5 @@ class Downloader:
         prev = ""
         for td in soup.find_all("td"):
             if prev == "Accuracy":
-                return td.text.strip()
+                return int("".join([c for c in td.text if c.isdigit()])) / 1000
             prev = td.text
