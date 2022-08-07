@@ -8,9 +8,10 @@ Script to create tables for Type Racer Logs
 import sqlite3
 
 TABLES = {"users": 
-        [["username"], ["username", "TEXT"], ["num_races", "INTEGER"],
-        ["num_chars", "INTEGER"], ["total_time", "INTEGER"], ["start_time",
-        "INTEGER"], ["layout", "TEXT"]],
+        [["username"], ["username", "TEXT"], ["join_date", "INTEGER"],
+        ["layout", "TEXT"], ["num_races", "INTEGER"], ["num_chars", "INTEGER"],
+        ["num_typo", "INTEGER"], ["total_time", "INTEGER"], ["start_time",
+        "INTEGER"], ["last_action", "INTEGER"]], 
         "words":
         [["user_id", "word"], ["user_id", "INTEGER"], ["word", "TEXT"],
         ["num_typed", "INTEGER"], ["time", "INTEGER"],
