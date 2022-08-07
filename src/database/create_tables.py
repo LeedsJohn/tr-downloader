@@ -10,7 +10,7 @@ import sqlite3
 TABLES = {"users": 
         [["username"], ["username", "TEXT"], ["num_races", "INTEGER"],
         ["num_chars", "INTEGER"], ["total_time", "INTEGER"], ["start_time",
-        "INTEGER"]],
+        "INTEGER"], ["layout", "TEXT"]],
         "words":
         [["user_id", "word"], ["user_id", "INTEGER"], ["word", "TEXT"],
         ["num_typed", "INTEGER"], ["time", "INTEGER"],
