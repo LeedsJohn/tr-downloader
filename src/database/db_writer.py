@@ -10,7 +10,7 @@ import time
 
 class Writer:
     def __init__(self):
-        self.con = sqlite3.connect('../../data/database.db')
+        self.con = sqlite3.connect('../data/database.db')
         self.cur = self.con.cursor()
 
     def addUser(self, username, layout):
@@ -68,7 +68,7 @@ class Writer:
         self.con.commit()
 
     def updateText(self, text_id, text, time, acc):
-        acc = int(acc * 10)
+        acc = int(acc * 1000)
         def checkText(text_id):
             query = """SELECT * from texts
                        WHERE text_id = ?;"""

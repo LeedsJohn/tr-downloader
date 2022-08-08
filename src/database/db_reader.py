@@ -5,10 +5,11 @@ db_reader.py
 
 Read from database for Type Racer Predictions
 """
+import sqlite3
 
 class Reader:
     def __init__(self):
-        self.con = sqlite3.connect('../../data/database.db')
+        self.con = sqlite3.connect('../data/database.db')
         self.cur = self.con.cursor()
 
     def getUserID(self, username):
@@ -19,7 +20,7 @@ class Reader:
         """
         query = """SELECT rowid FROM users
                    WHERE username = ?;"""
-        return self.cur.execute(query, [username]).fetchone()
+        return self.cur.execute(query, [username]).fetchone()[0]
     
     def getWord(self, s, uid):
         return self.getSegment("words", s, uid)
@@ -34,14 +35,14 @@ class Reader:
         typeOfSegment = table[:-1]
         query = f"""SELECT * FROM {table}
                    WHERE user_id = ? AND {typeOfSegment} = ?;"""
-        return self.cur.execute(query, [uid, s]).fetchone()
+        return self.cur.execute(query, [uid, s]).fetchone()[0]
     
     def getRace(self, uid, race_index):
         query = """SELECT * FROM races
                    WHERE user_id = ? AND race_index = ?;"""
-        return self.cur.execute(query, [uid, race_index]).fetchone()
+        return self.cur.execute(query, [uid, race_index]).fetchone()[0]
 
     def getText(self, textID):
         query = """SELECT * FROM texts
                    WHERE text_id = ?;"""
-        return self.cur.execute(query, [textID]).fetchone()
+        return self.cur.execute(query, [textID]).fetchone()[0]
