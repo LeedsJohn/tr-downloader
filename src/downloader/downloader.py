@@ -9,7 +9,7 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import json
-import formatter as fm
+import downloader.formatter as fm
 
 class Downloader:
     def __init__(self):
