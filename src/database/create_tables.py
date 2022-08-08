@@ -27,11 +27,11 @@ TABLES = {"users":
         "races":
         [["user_id", "race_index"], ["user_id", "INTEGER"], ["race_index",
         "INTEGER"], ["text_id", "INTEGER"], ["date", "TEXT"], ["registered",
-        "INTEGER"], ["unlagged", "REAL"], ["adjusted", "REAL"], ["accuracy",
+        "INTEGER"], ["unlagged", "REAL"], ["adjusted", "REAL"], ["acc",
         "REAL"], ["typing_log", "TEXT"]],
         "texts":
-        [["text_id"], ["text_id", "INTEGER"], ["num_typed", "INTEGER"],
-        ["total_time", "INTEGER"], ["total_accuracy", "REAL"]]
+        [["text_id"], ["text_id", "INTEGER"], ["text", "TEXT"], ["num_typed",
+        "INTEGER"], ["total_time", "INTEGER"], ["total_acc", "INTEGER"]]
         }
 
 def generateText(table, values):
