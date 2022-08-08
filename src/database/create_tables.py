@@ -26,7 +26,7 @@ TABLES = {"users":
         ["num_typo", "INTEGER"], ["typo_time", "INTEGER"]],
         "races":
         [["user_id", "race_index"], ["user_id", "INTEGER"], ["race_index",
-        "INTEGER"], ["text_id", "INTEGER"], ["date", "TEXT"], ["registered",
+        "INTEGER"], ["text_id", "INTEGER"], ["date", "INTEGER"], ["registered",
         "INTEGER"], ["unlagged", "REAL"], ["adjusted", "REAL"], ["acc",
         "REAL"], ["typing_log", "TEXT"]],
         "texts":
