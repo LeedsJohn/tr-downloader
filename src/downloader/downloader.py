@@ -7,6 +7,7 @@ Contains a class to download TypeRacer races.
 """
 import requests
 from bs4 import BeautifulSoup
+import datetime
 import time
 import json
 import downloader.formatter as fm
@@ -93,10 +94,21 @@ class Downloader:
 
     def findDate(self, soup):
         prev = ""
+        date = ""
         for td in soup.find_all("td"):
             if prev == "Date":
-                return td.text.strip()
+                date = td.text.strip()
             prev = td.text
+        date = date.split()
+        monthToNum = {"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5,
+                      "Jun": 6, "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10,
+                      "Nov": 11, "Dec": 12}
+        print(date)
+        time = date[4].split(":")
+        print(time)
+        time = [int(t) for t in time]
+        return int(datetime.datetime(int(date[3]), monthToNum[date[2]],
+            int(date[1]), time[0], time[1], time[2]).timestamp())
 
     def findTextID(self, soup):
         for link in soup.find_all("a"):
