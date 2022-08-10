@@ -26,19 +26,31 @@ def toList(s):
     return log
 
 def addToLog(log, dataType, newEntry):
+    """
+    Inserts an entry into the log
+    log: string copy of the log
+    dataType: "word", "char_pair", or "char"
+    newEntry: to be inserted in the form
+        [race index, ms, "+" for added or "-" for typo]
+
+    returns [newLog, typo (bool), ms of deleted character]
+    """
     length = {"word": MAX_WORD, "char_pair": MAX_CP, "char", MAX_CHAR}
     log = toList(log)
     if len(log) == length:
         if log[-1][0] <= newEntry[0]:
             # if the log is max length and there is an older entry than the new
-            log.pop()
+            deleted = log.pop()
+            old = [False, deleted[1]]
+            if deleted[2] == "-":
+                old[0] = True
             if log[-1][0] > newEntry[0]:
                 # handle adding to end to avoid index out of bounds
                 log.append(newEntry)
-                return toString(log)
+                return [toString(log), old[0], old[1]]
         else:
             # log is full of more recent entries
-            return None 
+            return [toString(log), False, 0]
 
     # binary search to insert in sorted order
     l, r = 0, length - 1
@@ -46,8 +58,10 @@ def addToLog(log, dataType, newEntry):
         m = (l + r) // 2
         if log[m + 1][0] <= newEntry[0] < log[m][0]:
             log.insert(m, newEntry)
-            return toString(log)
+            return [toString(log), old[0], old[1]]
         if log[m][0] > newEntry[0]:
             l = m + 1
         else:
             r = m - 1
+    
+    return [toString(log), False, 0]
