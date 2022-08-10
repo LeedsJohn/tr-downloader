@@ -35,7 +35,7 @@ def addToLog(log, dataType, newEntry):
 
     returns [newLog, typo (bool), ms of deleted character]
     """
-    length = {"word": MAX_WORD, "char_pair": MAX_CP, "char", MAX_CHAR}
+    length = {"word": MAX_WORD, "char_pair": MAX_CP, "char": MAX_CHAR}
     log = toList(log)
     if len(log) == length:
         if log[-1][0] <= newEntry[0]:
