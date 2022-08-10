@@ -11,27 +11,19 @@ TABLES = {"users":
         [["username"], ["username", "TEXT"], ["join_date", "INTEGER"],
         ["layout", "TEXT"], ["num_races", "INTEGER"], ["num_chars", "INTEGER"],
         ["num_typo", "INTEGER"], ["total_time", "INTEGER"], ["start_time",
-        "INTEGER"], ["last_action", "INTEGER"]], 
+        "INTEGER"], ["last_action", "INTEGER"], ["downloaded", "TEXT"]], 
         "words":
         [["user_id", "word"], ["user_id", "INTEGER"], ["word", "TEXT"],
         ["num_typed", "INTEGER"], ["time", "INTEGER"],
-        ["num_typo", "INTEGER"], ["typo_time", "INTEGER"]],
+        ["num_typo", "INTEGER"], ["typo_time", "INTEGER"], ["log", "TEXT"]],
         "char_pairs":
         [["user_id", "char_pair"], ["user_id", "INTEGER"], ["char_pair", "TEXT"],
         ["num_typed", "INTEGER"], ["time", "INTEGER"],
-        ["num_typo", "INTEGER"], ["typo_time", "INTEGER"]],
+        ["num_typo", "INTEGER"], ["typo_time", "INTEGER"], ["log", "TEXT"]],
         "chars":
         [["user_id", "char"], ["user_id", "INTEGER"], ["char", "TEXT"],
         ["num_typed", "INTEGER"], ["time", "INTEGER"],
-        ["num_typo", "INTEGER"], ["typo_time", "INTEGER"]],
-        "races":
-        [["user_id", "race_index"], ["user_id", "INTEGER"], ["race_index",
-        "INTEGER"], ["text_id", "INTEGER"], ["date", "INTEGER"], ["registered",
-        "INTEGER"], ["unlagged", "REAL"], ["adjusted", "REAL"], ["acc",
-        "REAL"], ["typing_log", "TEXT"]],
-        "texts":
-        [["text_id"], ["text_id", "INTEGER"], ["text", "TEXT"], ["num_typed",
-        "INTEGER"], ["total_time", "INTEGER"], ["total_acc", "INTEGER"]]
+        ["num_typo", "INTEGER"], ["typo_time", "INTEGER"], ["log", "TEXT"]],
         }
 
 def generateText(table, values):
