@@ -50,7 +50,7 @@ def addToLog(log, dataType, newEntry):
                 return [toString(log), old[0], old[1]]
         else:
             # log is full of more recent entries
-            return [toString(log), False, 0]
+            return [toString(log), False, -1]
 
     # binary search to insert in sorted order
     l, r = 0, length - 1
