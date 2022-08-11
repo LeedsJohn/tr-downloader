@@ -33,35 +33,45 @@ def addToLog(log, dataType, newEntry):
     newEntry: to be inserted in the form
         [race index, ms, "+" for added or "-" for typo]
 
-    returns [newLog, typo (bool), ms of deleted character]
+    returns [newLog, typed deleted (ms), typo deleted (ms)] 
     """
-    length = {"word": MAX_WORD, "char_pair": MAX_CP, "char": MAX_CHAR}
+    lengthMap = {"word": MAX_WORD, "char_pair": MAX_CP, "char": MAX_CHAR}
+    length = lengthMap[dataType]
     log = toList(log)
+    res = [None, 0, 0]
     if len(log) == length:
         if log[-1][0] <= newEntry[0]:
             # if the log is max length and there is an older entry than the new
             deleted = log.pop()
-            old = [False, deleted[1]]
-            if deleted[2] == "-":
-                old[0] = True
-            if log[-1][0] > newEntry[0]:
-                # handle adding to end to avoid index out of bounds
-                log.append(newEntry)
-                return [toString(log), old[0], old[1]]
+            if deleted[2] == "+":
+                res[1] = deleted[1]
+            else:
+                res[2] = deleted[1]
         else:
             # log is full of more recent entries
-            return [toString(log), False, -1]
+            res[0] = toString(log)
+            return res
 
+    # handle edge cases to avoid index out of bounds
+    if log[-1][0] > newEntry[0]:
+        log.append(newEntry)
+        res[0] = toString(log)
+        return res
+    if log[0][0] <= newEntry[0]:
+        log.insert(0, newEntry)
+        res[0] = toString(log)
+        return res
     # binary search to insert in sorted order
-    l, r = 0, length - 1
+    l, r = 0, len(log) - 1
     while l <= r:
         m = (l + r) // 2
         if log[m + 1][0] <= newEntry[0] < log[m][0]:
-            log.insert(m, newEntry)
-            return [toString(log), old[0], old[1]]
-        if log[m][0] > newEntry[0]:
+            log.insert(m + 1, newEntry)
+            res[0] = toString(log)
+            return res 
+        if newEntry[0] < log[m][0]:
             l = m + 1
         else:
             r = m - 1
-    
-    return [toString(log), False, 0]
+   
+    return res
