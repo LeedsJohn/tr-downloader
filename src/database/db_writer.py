@@ -7,11 +7,11 @@ Interface to write to tr predictor database
 """
 import sqlite3
 import time
-import process_lists as pl
+import database.process_lists as pl
 
 class Writer:
     def __init__(self):
-        self.con = sqlite3.connect('../../data/database.db')
+        self.con = sqlite3.connect('../data/database.db')
         self.cur = self.con.cursor()
 
     def addUser(self, username, layout):
@@ -114,7 +114,3 @@ class Writer:
                 acc, log]
         self.cur.execute(query, data)
         self.con.commit()
-
-john = Writer()
-john.addUser("NoThisIsJohn", "dvorak")
-john.con.close()

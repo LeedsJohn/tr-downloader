@@ -1,6 +1,6 @@
 """
 John Leeds
-format_lists.py
+process_lists.py
 8/10/2022
 
 Script to handle changing text between a list and text

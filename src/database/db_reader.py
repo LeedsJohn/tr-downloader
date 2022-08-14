@@ -9,7 +9,7 @@ import sqlite3
 
 class Reader:
     def __init__(self):
-        self.con = sqlite3.connect('../../data/database.db')
+        self.con = sqlite3.connect('../data/database.db')
         self.cur = self.con.cursor()
 
     def getUserID(self, username):
