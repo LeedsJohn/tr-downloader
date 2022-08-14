@@ -15,11 +15,12 @@ class Writer:
         self.cur = self.con.cursor()
 
     def addUser(self, username, layout):
+        username, layout = username.lower(), layout.lower()
         text = """INSERT INTO users (username, join_date, last_action, layout,
-        num_races, num_chars, num_typo, total_time, start_time)
+        num_races, num_chars, num_typo, total_time, start_time, downloaded)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);"""
         vals = [username, int(time.time()), int(time.time()), layout, 0, 0, 0,
-                0, 0]
+                0, 0, -1]
         self.cur.execute(text, vals)
         self.con.commit()
     
@@ -113,3 +114,7 @@ class Writer:
                 acc, log]
         self.cur.execute(query, data)
         self.con.commit()
+
+john = Writer()
+john.addUser("NoThisIsJohn", "dvorak")
+john.con.close()
