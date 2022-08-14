@@ -13,6 +13,7 @@ MAX_CHAR = 500
 I_SPL = chr(8592) # inner split - leftward arrow
 O_SPL = chr(8593) # outer split - upward arrow
 
+        
 def toString(l):
     log = [[str(c) for c in e] for e in l]
     log = [I_SPL.join(e) for e in log]
@@ -20,9 +21,15 @@ def toString(l):
     return log
 
 def toList(s):
+    def toInt(c):
+        if c.isnumeric():
+            return int(c)
+        return c
     log = s.split(O_SPL)
     log = [e.split(I_SPL) for e in log]
-    log = [[int(e[0]), int(e[1]), e[2]] for e in log]
+    log = [[toInt(c) for i, c in enumerate(e) if i <= 3] for e in log]
+    if not log[0][0]:
+        return []
     return log
 
 def addToLog(log, dataType, newEntry):
@@ -81,3 +88,55 @@ def addToLog(log, dataType, newEntry):
   
     return [toString(log)] + combine(added, removed)
 
+def numInRaces(races, num):
+    races = toList(races)
+    if not races or num < races[0][0] or num > races[-1][1]:
+        return False
+    l, r = 0, len(races) - 1
+    while l <= r:
+        m = (l + r) // 2
+        if races[m][0] <= num <= races[m][1]:
+            return True
+        if races[m][1] < num:
+            l = m + 1
+        else:
+            r = m - 1
+    return False
+
+def addToRaces(races, num):
+    if numInRaces(races, num):
+        return races
+    races = toList(races)
+    if not races:
+        return toString([[num, num]])
+    if num > races[-1][1]:
+        if num == races[-1][1] + 1:
+            races[-1][1] += 1
+        else:
+            races.append([num, num])
+        return toString(races)
+    if num < races[0][0]:
+        if num == races[0][0] - 1:
+            races[0][0] -= 1
+        else:
+            races.insert(0, [num, num])
+        return toString(races)
+    
+    l, r = 0, len(races) - 1
+    while l <= r:
+        m = (l + r) // 2
+        if races[m][1] < num < races[m + 1][0]:
+            if races[m][1] + 1 == races[m + 1][0] - 1: # merge entries
+                races[m][1] = races[m + 1][1]
+                del races[m + 1]
+            elif num > races[m][1] + 1 and num < races[m + 1][0] - 1: # new entry
+                races.insert(m + 1, [num, num])
+            elif num == races[m][1] + 1:
+                races[m][1] += 1
+            else:
+                races[m + 1][0] -= 1
+            return toString(races)
+        if races[m][1] < num:
+            l = m + 1
+        else:
+            r = m - 1
