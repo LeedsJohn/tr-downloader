@@ -33,45 +33,51 @@ def addToLog(log, dataType, newEntry):
     newEntry: to be inserted in the form
         [race index, ms, "+" for added or "-" for typo]
 
-    returns [newLog, typed deleted (ms), typo deleted (ms)] 
+    returns [newLog, typed deleted (ms), typo deleted (ms),
+             difference in number of typed chars, typo dif] 
     """
+    def combine(add, sub):
+        for i in range(4):
+            add[i] += sub[i]
+        return add
+
     lengthMap = {"word": MAX_WORD, "char_pair": MAX_CP, "char": MAX_CHAR}
     length = lengthMap[dataType]
     log = toList(log)
-    res = [None, 0, 0]
+    added = [newEntry[1], 0, 1, 0]
+    if newEntry[2] == "-":
+        added = [0, newEntry[1], 0, 1]
+    removed = [0, 0, 0, 0]
     if len(log) == length:
         if log[-1][0] <= newEntry[0]:
             # if the log is max length and there is an older entry than the new
             deleted = log.pop()
             if deleted[2] == "+":
-                res[1] = deleted[1]
+                removed = [-deleted[1], 0, -1, 0]
             else:
-                res[2] = deleted[1]
+                removed = [0, -deleted[1], 0, -1]
         else:
             # log is full of more recent entries
-            res[0] = toString(log)
-            return res
-
+            added = [0, 0, 0, 0]
+            return [toString(log)] + combine(added, removed)
     # handle edge cases to avoid index out of bounds
     if log[-1][0] > newEntry[0]:
         log.append(newEntry)
-        res[0] = toString(log)
-        return res
+        return [toString(log)] + combine(added, removed)
     if log[0][0] <= newEntry[0]:
         log.insert(0, newEntry)
-        res[0] = toString(log)
-        return res
+        return [toString(log)] + combine(added, removed)
     # binary search to insert in sorted order
     l, r = 0, len(log) - 1
     while l <= r:
         m = (l + r) // 2
         if log[m + 1][0] <= newEntry[0] < log[m][0]:
             log.insert(m + 1, newEntry)
-            res[0] = toString(log)
-            return res 
+            return [toString(log)] + combine(added, removed)
         if newEntry[0] < log[m][0]:
             l = m + 1
         else:
             r = m - 1
-   
-    return res
+  
+    return [toString(log)] + combine(added, removed)
+

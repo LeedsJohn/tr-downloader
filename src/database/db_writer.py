@@ -7,10 +7,11 @@ Interface to write to tr predictor database
 """
 import sqlite3
 import time
+import process_lists as pl
 
 class Writer:
     def __init__(self):
-        self.con = sqlite3.connect('../data/database.db')
+        self.con = sqlite3.connect('../../data/database.db')
         self.cur = self.con.cursor()
 
     def addUser(self, username, layout):
@@ -22,51 +23,56 @@ class Writer:
         self.cur.execute(text, vals)
         self.con.commit()
     
-    def updateWords(self, uid, word, time, typo = False):
-        self.updateStats("words", uid, word, time, typo)
+    def updateWords(self, uid, word, race_index, time, typo = False):
+        self.updateStats("words", uid, word, race_index, time, typo)
 
-    def updateChar_pairs(self, uid, word, time, typo = False):
-        self.updateStats("char_pairs", uid, word, time, typo)
+    def updateChar_pairs(self, uid, word, race_index, time, typo = False):
+        self.updateStats("char_pairs", uid, word, race_index, time, typo)
 
-    def updateChars(self, uid, word, time, typo = False):
-        self.updateStats("chars", uid, word, time, typo)
+    def updateChars(self, uid, word, race_index, time, typo = False):
+        self.updateStats("chars", uid, word, race_index, time, typo)
 
-    def updateStats(self, table, uid, word, time, typo = False):
+    def updateStats(self, table, uid, word, race_index, time, typo = False):
         """
         Updates either the words, char_pairs, or chars table
         Adds a new row if necessary, else updates
         """
         col = table[:-1] # the column is equal to the table without the s
-        def checkWord(uid, word):
+        entry = [race_index, time, "+"]
+        if typo:
+            entry[2] = "-"
+
+        def getEntry(uid, word):
             query = f"""SELECT * FROM {table}
                 WHERE user_id = ? AND {col} = ?;"""
             res = self.cur.execute(query, [uid, word])
-            return True if res.fetchone() else False
+            return res.fetchone()
         
-        if not checkWord(uid, word):
+        oldRow = getEntry(uid, word)
+        if not oldRow:
             query = f"""INSERT INTO {table} (user_id, {col}, num_typed, time,
-                       num_typo, typo_time)
-                       VALUES (?, ?, ?, ?, ?, ?);"""
+                       num_typo, typo_time, log)
+                       VALUES (?, ?, ?, ?, ?, ?, ?);"""
             if not typo:
-                data = [uid, word, 1, time, 0, 0]
+                data = [uid, word, 1, time, 0, 0, pl.toString([entry])]
             else:
-                data = [uid, word, 0, 0, 1, time]
+                data = [uid, word, 0, 0, 1, time, pl.toString([entry])]
             self.cur.execute(query, data)
-        else:
-            data = [time, uid, word]
-            if not typo:
-                query = f"""UPDATE {table}
-                           SET num_typed = num_typed + 1,
-                               time = time + ?
-                           WHERE user_id = ? AND {col} = ?;"""
-            else:
-                query = f"""UPDATE {table} 
-                           SET num_typo = num_typo + 1,
-                               typo_time = typo_time + ?
-                           WHERE user_id = ? AND {col} = ?;"""
-            self.cur.execute(query, data)
+            self.con.commit()
+            return
+        
+        data = pl.addToLog(oldRow[6], col, entry)
+        query = f"""UPDATE {table}
+                    SET num_typed = num_typed + ?,
+                        time = time + ?,
+                        num_typo = num_typo + ?,
+                        typo_time = typo_time + ?,
+                        log = ?
+                    WHERE user_id = ? AND {col} = ?;"""
+        data = [data[3], data[1], data[4], data[2], data[0], uid, word]
+        self.cur.execute(query, data)
         self.con.commit()
-
+                            
     def updateText(self, text_id, text, time, acc):
         acc = int(acc * 1000)
         def checkText(text_id):
