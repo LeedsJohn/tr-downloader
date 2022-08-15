@@ -21,6 +21,8 @@ def toString(l):
     return log
 
 def toList(s):
+    if not s:
+        return []
     def toInt(c):
         if c.isnumeric():
             return int(c)
@@ -104,6 +106,8 @@ def numInRaces(races, num):
     return False
 
 def addToRaces(races, num):
+    if not races:
+        return toString([[num, num]])
     if numInRaces(races, num):
         return races
     races = toList(races)

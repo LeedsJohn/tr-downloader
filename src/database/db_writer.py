@@ -24,6 +24,21 @@ class Writer:
         self.cur.execute(text, vals)
         self.con.commit()
     
+    def addRaceNum(self, username, num):
+        username = username.lower()
+        def getOldRaces():
+            query = """SELECT downloaded FROM users
+                       WHERE username = ?"""
+            res = self.cur.execute(query, [username]).fetchone()
+            if res:
+                return res[0]
+        newRaces = pl.addToRaces(getOldRaces(), num)
+        query = """UPDATE users
+                   SET downloaded = ?
+                   WHERE username = ?"""
+        self.cur.execute(query, [newRaces, username])
+        self.con.commit()
+
     def updateWords(self, uid, word, race_index, time, typo = False):
         self.updateStats("words", uid, word, race_index, time, typo)
 
