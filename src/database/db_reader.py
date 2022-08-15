@@ -6,6 +6,7 @@ db_reader.py
 Read from database for Type Racer Predictions
 """
 import sqlite3
+import database.process_lists as pl
 
 class Reader:
     def __init__(self):
@@ -26,6 +27,16 @@ class Reader:
             return res[0]
         return -1
     
+    def completedRace(self, username, num):
+
+        username = username.lower()
+        query = """SELECT downloaded FROM users
+                   WHERE username = ?;"""
+        res = self.cur.execute(query, [username]).fetchone()
+        if res:
+            return pl.numInRaces(res[0], num)
+        return False
+
     def getWord(self, s, uid):
         return self.getSegment("words", s, uid)
 
