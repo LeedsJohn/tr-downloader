@@ -33,11 +33,20 @@ class Writer:
             res = self.cur.execute(query, [username]).fetchone()
             if res:
                 return res[0]
+
         newRaces = pl.addToRaces(getOldRaces(), num)
         query = """UPDATE users
                    SET downloaded = ?
-                   WHERE username = ?"""
+                   WHERE username = ?;"""
         self.cur.execute(query, [newRaces, username])
+        self.con.commit()
+        
+    def incrementRacecount(self, username):
+        username = username.lower()
+        query = """UPDATE users
+                   SET num_races = num_races + 1
+                   WHERE username = ?;"""
+        self.cur.execute(query, [username])
         self.con.commit()
 
     def updateWords(self, uid, word, race_index, time, typo = False):
@@ -90,43 +99,3 @@ class Writer:
         self.cur.execute(query, data)
         self.con.commit()
                             
-    def updateText(self, text_id, text, time, acc):
-        acc = int(acc * 1000)
-        def checkText(text_id):
-            query = """SELECT * from texts
-                       WHERE text_id = ?;"""
-            res = self.cur.execute(query, [text_id])
-            return True if res.fetchone() else False
-        if not checkText(text_id):
-            query = """INSERT INTO texts
-            (text_id, text, num_typed, total_time, total_acc)
-            VALUES (?, ?, ?, ?, ?);"""
-            self.cur.execute(query, [text_id, text, 1, time, acc])
-        else:
-            query = """UPDATE texts
-                       SET num_typed = num_typed + 1,
-                           total_time = total_time + ?,
-                           total_acc = total_acc + ?
-                        WHERE text_id = ?;"""
-            self.cur.execute(query, [time, acc, text_id])
-        self.con.commit()
-
-    def addRace(self, uid, race_index, text_id, date, registered, unlagged,
-            adjusted, acc, log):
-        def formatLog(log):
-            # turn log into string
-            # split inner lists with leftwards arrow, outer with up arrow
-            log = [[str(c) for c in e] for e in log]
-            log = [chr(8592).join(e) for e in log]
-            log = chr(8593).join(log)
-            return log
-
-        query = """INSERT INTO races
-                   (user_id, race_index, text_id, date, registered, unlagged,
-                   adjusted, acc, typing_log)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);"""
-        log = formatLog(log)
-        data = [uid, race_index, text_id, date, registered, unlagged, adjusted,
-                acc, log]
-        self.cur.execute(query, data)
-        self.con.commit()
