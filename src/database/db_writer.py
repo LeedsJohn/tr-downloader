@@ -18,9 +18,10 @@ class Writer:
         username, layout = username.lower(), layout.lower()
         text = """INSERT INTO users (username, join_date, last_action, layout,
         num_races, num_chars, num_typo, total_time, start_time, downloaded)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
         vals = [username, int(time.time()), int(time.time()), layout, 0, 0, 0,
-                0, 0, -1]
+                0, 0, None]
+        print(vals)
         self.cur.execute(text, vals)
         self.con.commit()
     
