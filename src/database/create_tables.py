@@ -40,7 +40,7 @@ def makeTables(con, cur):
         con.commit()
 
 def main():
-    con = sqlite3.connect('../../data/database.db')
+    con = sqlite3.connect('../data/database.db')
     cur = con.cursor()
     makeTables(con, cur)
     con.close()
