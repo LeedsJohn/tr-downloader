@@ -18,7 +18,8 @@ def addRace(username, text, log, num):
         reader.con.close()
         return False
     uid = reader.getUserID(username)
-    # addChars(uid, text, log, num, writer, reader)
+    addChars(uid, text, log, num, writer, reader)
+    addCPs(uid, text, log, num, writer, reader)
     addWords(uid, text, log, num, writer, reader)
     writer.con.close()
     reader.con.close()
@@ -60,9 +61,9 @@ def addWords(uid, text, log, num, wr, re):
 
 def addCPs(uid, text, log, num, wr, re):
     cur = ""
-    time = 0
+    time = log[0][1] * -1 # Negate start time
     typo = False
-    i = 0
+    i = 1
     for e in log:
         time += e[1]
         if e[2]:
@@ -73,7 +74,7 @@ def addCPs(uid, text, log, num, wr, re):
         if cur == text[:i]:
             i += 1
             if len(cur) > 1:
-                wr.updateChar_pairs(uid, e[-2:], num, time, typo)
+                wr.updateChar_pairs(uid, cur[-2:], num, time, typo)
             time = 0
             typo = False
 
@@ -113,8 +114,9 @@ def removeTypo(typed, remove):
             return typed[:i] + typed[i + 1:]
 
 wr = Writer()
-wr.addUser("nothisisjohn", "dvorak")
+# wr.addUser("nothisisjohn", "dvorak")
 dl = Downloader()
 info = dl.getInfo("nothisisjohn", 15181)
 text = "Scissors cuts paper. Paper covers rock. Rock crushes lizard. Lizard poisons Spock. Spock smashes scissors. Scissors decapitates lizard. Lizard eats paper. Paper disproves Spock. Spock vaporizes rock. And as it always has, rock crushes scissors."
 addRace("nothisisjohn", text, info["typedText"], 15181)
+wr.con.close()
