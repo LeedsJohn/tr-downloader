@@ -34,16 +34,16 @@ def generateText(table, values):
     text += f"PRIMARY KEY ({', '.join(prim_keys)}));"
     return text
 
-def makeTables(con, cur):
+def makeTables():
+    con = sqlite3.connect('../data/database.db')
+    cur = con.cursor()
     for table in TABLES:
         cur.execute(generateText(table, TABLES[table]))
         con.commit()
+    con.close()
 
 def main():
-    con = sqlite3.connect('../data/database.db')
-    cur = con.cursor()
-    makeTables(con, cur)
-    con.close()
+    makeTables()
 
 if __name__ == "__main__":
     main()

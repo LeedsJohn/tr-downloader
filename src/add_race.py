@@ -17,6 +17,7 @@ def addRace(username, text, log, num):
         writer.con.close()
         reader.con.close()
         return False
+    writer.incrementRacecount(username)
     uid = reader.getUserID(username)
     addChars(uid, text, log, num, writer, reader)
     addCPs(uid, text, log, num, writer, reader)
