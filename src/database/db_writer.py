@@ -39,7 +39,7 @@ class Writer:
                    SET downloaded = ?
                    WHERE username = ?;"""
         self.cur.execute(query, [newRaces, username])
-        self.con.commit()
+#         self.con.commit()
         
     def incrementRacecount(self, username):
         username = username.lower()
@@ -47,7 +47,7 @@ class Writer:
                    SET num_races = num_races + 1
                    WHERE username = ?;"""
         self.cur.execute(query, [username])
-        self.con.commit()
+#         self.con.commit()
 
     def updateWords(self, uid, word, race_index, time, typo = False):
         self.updateStats("words", uid, word, race_index, time, typo)
@@ -84,7 +84,7 @@ class Writer:
             else:
                 data = [uid, word, 0, 0, 1, time, pl.toString([entry])]
             self.cur.execute(query, data)
-            self.con.commit()
+#             self.con.commit()
             return
         
         data = pl.addToLog(oldRow[6], col, entry)
@@ -97,5 +97,4 @@ class Writer:
                     WHERE user_id = ? AND {col} = ?;"""
         data = [data[3], data[1], data[4], data[2], data[0], uid, word]
         self.cur.execute(query, data)
-        self.con.commit()
-                            
+#         self.con.commit()

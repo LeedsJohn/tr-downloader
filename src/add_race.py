@@ -5,13 +5,14 @@ add_race.py
 
 Function to download a race and add it to the database
 """
-import random
 from downloader.downloader import Downloader
 from database.db_writer import Writer
 from database.db_reader import Reader
 
 def addRace(username, text, log, num):
     writer = Writer()
+    writer.con.isolation_level = None
+    writer.cur.execute("begin")
     reader = Reader()
     if reader.completedRace(username, num):
         writer.con.close()
@@ -22,6 +23,7 @@ def addRace(username, text, log, num):
     addChars(uid, text, log, num, writer, reader)
     addCPs(uid, text, log, num, writer, reader)
     addWords(uid, text, log, num, writer, reader)
+    writer.cur.execute("commit")
     writer.con.close()
     reader.con.close()
 
