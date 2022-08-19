@@ -90,7 +90,7 @@ class Downloader:
         for c in text[1:]:
             if not (newText[-1] == " " and c == " "):
                 newText.append(c)
-        return "".join(newText)
+        return "".join(newText).strip()
 
 
     def findTypingLog(self, soup):
