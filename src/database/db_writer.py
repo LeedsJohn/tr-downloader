@@ -21,7 +21,6 @@ class Writer:
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
         vals = [username, int(time.time()), int(time.time()), layout, 0, 0, 0,
                 0, 0, None]
-        print(vals)
         self.cur.execute(text, vals)
         self.con.commit()
     

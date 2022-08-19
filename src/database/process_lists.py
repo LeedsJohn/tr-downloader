@@ -6,9 +6,9 @@ process_lists.py
 Script to handle changing text between a list and text
 """
 # how much data to store
-MAX_WORD = 50
-MAX_CP = 100
-MAX_CHAR = 500
+MAX_WORD = 100
+MAX_CP = 250
+MAX_CHAR = 1000
 # ----------------------
 I_SPL = chr(8592) # inner split - leftward arrow
 O_SPL = chr(8593) # outer split - upward arrow

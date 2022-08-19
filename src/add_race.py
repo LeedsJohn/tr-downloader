@@ -5,24 +5,28 @@ add_race.py
 
 Function to download a race and add it to the database
 """
+import time
 from downloader.downloader import Downloader
 from database.db_writer import Writer
 from database.db_reader import Reader
 
-def addRace(username, text, log, num):
+def addRace(username, text, log, num, avoidDuplicates = True):
     writer = Writer()
     writer.con.isolation_level = None
     writer.cur.execute("begin")
     reader = Reader()
-    if reader.completedRace(username, num):
+    if avoidDuplicates and reader.completedRace(username, num):
         writer.con.close()
         reader.con.close()
+        print("already added")
         return False
     writer.incrementRacecount(username)
+    writer.addRaceNum(username, num)
     uid = reader.getUserID(username)
     addChars(uid, text, log, num, writer, reader)
     addCPs(uid, text, log, num, writer, reader)
     addWords(uid, text, log, num, writer, reader)
+    print("added")
     writer.cur.execute("commit")
     writer.con.close()
     reader.con.close()
@@ -61,6 +65,9 @@ def addWords(uid, text, log, num, wr, re):
                 typo = False
                 word = ""
             i += 1
+    if cur != text:
+        print(f" CUR: {cur}\nTEXT: {text}")
+        print("\n\nTHERE SOME WHACK STUFF GOING ON\n\n")
 
 def addCPs(uid, text, log, num, wr, re):
     cur = ""
@@ -115,11 +122,19 @@ def removeTypo(typed, remove):
     for i in range(len(typed) - 1, -1, -1):
         if typed[i] == remove:
             return typed[:i] + typed[i + 1:]
+    return typed
 
 wr = Writer()
-# wr.addUser("nothisisjohn", "dvorak")
+# wr.addUser("poem", "azerty")
 dl = Downloader()
-info = dl.getInfo("nothisisjohn", 15181)
-text = "Scissors cuts paper. Paper covers rock. Rock crushes lizard. Lizard poisons Spock. Spock smashes scissors. Scissors decapitates lizard. Lizard eats paper. Paper disproves Spock. Spock vaporizes rock. And as it always has, rock crushes scissors."
-addRace("nothisisjohn", text, info["typedText"], 15181)
+# num = 15181 
+# info = dl.getInfo("nothisisjohn", num)
+# addRace("nothisisjohn", info["text"], info["typedText"], num)
+# time.sleep(2.1)
+badRaces = [167761]
+for race in badRaces:
+    print(race)
+    info = dl.getInfo("poem", race)
+    addRace("poem", info["text"], info["typedText"], race, False)
+    time.sleep(2.1)
 wr.con.close()

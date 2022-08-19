@@ -73,6 +73,9 @@ class Formatter:
                     group[0] = groupings[-1][0][-1]
                     groupings.append(group[:3])
                     groupings.append(group[3:])
+                    print(group)
+                    print(groupings[-10:])
+                    print("---")
             prev = item
         return groupings
 
@@ -116,6 +119,7 @@ class Formatter:
         newLog = []
         for c in log:
             if re.search(".\d[+-]", c[0]):
+                print(c)
                 chars = c[0][0] # create list of typed characters in the log
                 # first character is always typed
                 for i, char in enumerate(c[0][1:-1], start = 1):
@@ -125,6 +129,7 @@ class Formatter:
                     if char in "+-" and c[0][i - 1] not in "+-":
                         chars += c[0][i + 1]
                 newLog.append([chars, c[1], c[2]])
+                print(newLog[-1])
             else:
                 newLog.append(c)
         return newLog
