@@ -103,9 +103,10 @@ class Formatter:
                             curWord.reverse()
                             curWord.remove(c[0])
                             curWord.reverse()
-                if "".join(curWord) == goalWord:
+                if (len(curWord) >= len(goalWord) and
+                        "".join(curWord)[:len(goalWord)] == goalWord):
+                    curWord = curWord[len(goalWord):]
                     goalWord = words.pop(0)
-                    curWord = []
             ms = item
         
         return groupings
