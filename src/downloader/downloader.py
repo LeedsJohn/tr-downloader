@@ -84,9 +84,6 @@ class Downloader:
                 "typedText": typingLog}
 
     def processRaceText(self, text):
-        print("-------------\nRAW")
-        print(repr(text))
-        print("-------------")
         escapeChars = ['\n', '\b', '\f', '\r', '\t', '\v']
         text = [c if c not in escapeChars else " " for c in text] # remove escape characters
         newText = [text[0]]
