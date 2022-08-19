@@ -16,10 +16,10 @@ class Formatter:
     def format(self, text, typingLog):
         typingLog = self.removeUnicode(typingLog)
         typingLog = self.splitTypingLog(typingLog)
-        typingLog = self.group(typingLog)
-        typingLog = self.splitDoubles(typingLog)
+        typingLog = self.group(typingLog, text)
+#         typingLog = self.splitDoubles(typingLog)
         typingLog = self.cropEnd(text[-1], typingLog)
-        typingLog = self.separate(typingLog)
+#         typingLog = self.separate(typingLog)
         typingLog = self.addTypos(text, typingLog)
         return typingLog
 
@@ -56,30 +56,79 @@ class Formatter:
                 i += 1
         return splitLog
     
-    def group(self, typingLog):
+    def group(self, typingLog, text):
         """
         Splits the typing log into a list in the format
         [Character typed / deleted, ms, deleted (bool)]
         """
+        def getNumActions(entry):
+            # Count how many actions there are in one entry
+            length = len(entry)
+            num = 0
+            for i, c in enumerate(entry[1:]):
+                if c in "-+" and entry[i] not in "-+$":
+                    num += 1
+                elif c == "$" and entry[i] not in "-+$":
+                    num += 2
+            return num 
+        def getMSPerKey(ms, entry):
+            ms = int(ms)
+            numActions = getNumActions(entry)
+            msL = [ms // numActions] * numActions
+            total = msL[0] * numActions
+            i = 0
+            while total < ms:
+                msL[i] += 1
+                i += 1
+                total += 1
+            return msL 
+
+        words = [w + " " for w in text.split()]
+        words[-1] = words[-1][:-1]
+        words.append("")
         groupings = []
-        prev = ""
+        curWord = []
+        goalWord = words.pop(0)
+        ms = ""
         for item in typingLog:
             if not item.isnumeric():
-                group = self.getCharacter(prev, item)
-                if group[0] != "*#*":
-                    groupings.append(group)
-                else:
-                    # highlight + replace - delete last character of previous word
-                    group[0] = groupings[-1][0][-1]
-                    groupings.append(group[:3])
-                    groupings.append(group[3:])
-                    print(group)
-                    print(groupings[-10:])
-                    print("---")
-            prev = item
+                msPerKey = getMSPerKey(ms, item)
+                newEntry = self.getCharacters(msPerKey, item, curWord)
+                groupings += newEntry
+                for c in newEntry:
+                    if c[2]:
+                        curWord.append(c[0])
+                    else:
+                        if c[0] in curWord:
+                            curWord.reverse()
+                            curWord.remove(c[0])
+                            curWord.reverse()
+                if "".join(curWord) == goalWord:
+                    goalWord = words.pop(0)
+                    curWord = []
+            ms = item
+        
         return groupings
 
-    def getCharacter(self, ms, char):
+#         groupings = []
+#         prev = ""
+#         for item in typingLog:
+#             if not item.isnumeric():
+#                 group = self.getCharacter(prev, item)
+#                 if group[0] != "*#*":
+#                     groupings.append(group)
+#                 else:
+#                     # highlight + replace - delete last character of previous word
+#                     group[0] = groupings[-1][0][-1]
+#                     groupings.append(group[:3])
+#                     groupings.append(group[3:])
+#                     print(group)
+#                     print(groupings[-10:])
+#                     print("---")
+#             prev = item
+#         return groupings
+
+    def getCharacters(self, ms, entry, curWord):
         """
         Takes the number of ms and raw character information and turns it to
         [character(s) typed, ms, typed/deleted (1/0)]
@@ -92,21 +141,45 @@ class Formatter:
         I am not going to account for it right now.
         This special case is indicated by the 0th index being "*#*"
         """
-        if not ms.isnumeric():  # TODO check this
-            ms == "0"
-        ms = int(ms)
-        typed = re.search("^\d{1,2}\+", char)
-        replace = re.search("^\d{1,2}\$", char)
-        if typed:
-            return [char[typed.span()[1]:], ms, 1]
-        if replace:
-            if ms % 2 == 0:
-                msDel, msAdd = ms // 2, ms // 2
+        def getIndex(e, i):
+            index = ""
+            while i >= 0 and e[i].isnumeric():
+                index = e[i] + index
+                i -= 1
+            return int(index)
+        i = 0
+        res = []
+        end = []
+        length = len(entry)
+        while i < length:
+            if entry[i] == "+":
+                res.append([entry[i + 1], ms.pop(), 1])
+                i += 2
+            elif entry[i] == "-":
+                res.append([entry[i + 1], ms.pop(), 0])
+                i += 2
+            elif entry[i] == "$":
+                replacedChar = curWord[getIndex(entry, i - 1)]
+                end.append([entry[i + 1], ms.pop(), 1])
+                res.append([replacedChar, ms.pop(), 0])
+                i += 2
             else:
-                msDel, msAdd = (ms // 2 + 1), ms // 2
-            return ["*#*", msDel, 0, char[replace.span()[1]:], msAdd, 1]
-        else:
-            return ["".join(re.split("\d{1,2}\-", char)), ms, 0]
+                i += 1
+        res += end
+        return res
+#         ms = int(ms)
+#         typed = re.search("^\d{1,2}\+", char)
+#         replace = re.search("^\d{1,2}\$", char)
+#         if typed:
+#             return [char[typed.span()[1]:], ms, 1]
+#         if replace:
+#             if ms % 2 == 0:
+#                 msDel, msAdd = ms // 2, ms // 2
+#             else:
+#                 msDel, msAdd = (ms // 2 + 1), ms // 2
+#             return ["*#*", msDel, 0, char[replace.span()[1]:], msAdd, 1]
+#         else:
+#             return ["".join(re.split("\d{1,2}\-", char)), ms, 0]
 
     def splitDoubles(self, log):
         """
@@ -119,7 +192,6 @@ class Formatter:
         newLog = []
         for c in log:
             if re.search(".\d[+-]", c[0]):
-                print(c)
                 chars = c[0][0] # create list of typed characters in the log
                 # first character is always typed
                 for i, char in enumerate(c[0][1:-1], start = 1):
@@ -129,7 +201,6 @@ class Formatter:
                     if char in "+-" and c[0][i - 1] not in "+-":
                         chars += c[0][i + 1]
                 newLog.append([chars, c[1], c[2]])
-                print(newLog[-1])
             else:
                 newLog.append(c)
         return newLog
