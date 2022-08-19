@@ -110,11 +110,21 @@ class Formatter:
         Splits character sequences that are mashed together.
         Ex: 3+b,124,!!!4+ 5+t!!!,84,3,47,1+h
         https://data.typeracer.com/pit/result?id=|tr:hi_i_am_epic|1138
+        Triple split: https://data.typeracer.com/pit/result?id=|tr:nothisisjohn|14785
+        (when I type "tearing")
         """
         newLog = []
         for c in log:
             if re.search(".\d[+-]", c[0]):
-                newLog.append([c[0][0] + c[0][-1], c[1], c[2]])
+                chars = c[0][0] # create list of typed characters in the log
+                # first character is always typed
+                for i, char in enumerate(c[0][1:-1], start = 1):
+                    # look add characters that come after a + or -
+                    # But not if it is the second character in a row that is
+                    # + or - (because that indicates a typed + or -)
+                    if char in "+-" and c[0][i - 1] not in "+-":
+                        chars += c[0][i + 1]
+                newLog.append([chars, c[1], c[2]])
             else:
                 newLog.append(c)
         return newLog
