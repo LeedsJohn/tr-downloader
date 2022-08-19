@@ -68,8 +68,7 @@ class Downloader:
         url = f"https://data.typeracer.com/pit/result?id=|tr:{username}|{raceIndex}"
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser")
-        raceText = soup.find(class_="fullTextStr").text
-        raceText = raceText.replace("  ", " ")
+        raceText = self.processRaceText(soup.find(class_="fullTextStr").text)
         typingLog = self.findTypingLog(soup)
         typingLog = self.formatter.format(raceText, typingLog)
         date = self.findDate(soup)
@@ -83,6 +82,19 @@ class Downloader:
                 "registeredSpeed": registeredSpeed, "unlagSpeed": unlagSpeed,
                 "adjustSpeed": adjustSpeed, "time": time, "text": raceText,
                 "typedText": typingLog}
+
+    def processRaceText(self, text):
+        print("-------------\nRAW")
+        print(repr(text))
+        print("-------------")
+        escapeChars = ['\n', '\b', '\f', '\r', '\t', '\v']
+        text = [c if c not in escapeChars else " " for c in text] # remove escape characters
+        newText = [text[0]]
+        for c in text[1:]:
+            if not (newText[-1] == " " and c == " "):
+                newText.append(c)
+        return "".join(newText)
+
 
     def findTypingLog(self, soup):
         scripts = soup.find_all('script')
@@ -104,9 +116,7 @@ class Downloader:
         monthToNum = {"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5,
                       "Jun": 6, "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10,
                       "Nov": 11, "Dec": 12}
-        print(date)
         time = date[4].split(":")
-        print(time)
         time = [int(t) for t in time]
         return int(datetime.datetime(int(date[3]), monthToNum[date[2]],
             int(date[1]), time[0], time[1], time[2]).timestamp())
