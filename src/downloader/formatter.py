@@ -152,15 +152,17 @@ class Formatter:
         res = []
         end = []
         length = len(entry)
+        numDeleted = 0
         while i < length:
             if entry[i] == "+":
                 res.append([entry[i + 1], ms.pop(), 1])
                 i += 2
             elif entry[i] == "-":
                 res.append([entry[i + 1], ms.pop(), 0])
+                numDeleted += 1
                 i += 2
             elif entry[i] == "$":
-                replacedChar = curWord[getIndex(entry, i - 1)]
+                replacedChar = curWord[getIndex(entry, i - 1) + numDeleted]
                 end.append([entry[i + 1], ms.pop(), 1])
                 res.append([replacedChar, ms.pop(), 0])
                 i += 2
