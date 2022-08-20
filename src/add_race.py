@@ -6,6 +6,7 @@ add_race.py
 Function to download a race and add it to the database
 """
 import time
+import random
 from downloader.downloader import Downloader
 from database.db_writer import Writer
 from database.db_reader import Reader
@@ -18,7 +19,7 @@ def addRace(username, text, log, num, avoidDuplicates = True):
     if avoidDuplicates and reader.completedRace(username, num):
         writer.con.close()
         reader.con.close()
-        print("already added")
+        print(f"{username} {num} - already added")
         return False
     writer.incrementRacecount(username)
     writer.addRaceNum(username, num)
@@ -26,7 +27,6 @@ def addRace(username, text, log, num, avoidDuplicates = True):
     addChars(uid, text, log, num, writer, reader)
     addCPs(uid, text, log, num, writer, reader)
     addWords(uid, text, log, num, writer, reader)
-    print("added")
     writer.cur.execute("commit")
     writer.con.close()
     reader.con.close()
@@ -66,7 +66,8 @@ def addWords(uid, text, log, num, wr, re):
                 word = ""
             i += 1
     if cur != text:
-        print(f" CUR: {cur}\nTEXT: {text}")
+        print(num)
+        print(f"\n CUR: {cur}\nTEXT: {text}")
         print("\n\nTHERE SOME WHACK STUFF GOING ON\n\n")
 
 def addCPs(uid, text, log, num, wr, re):
@@ -126,15 +127,41 @@ def removeTypo(typed, remove):
 
 wr = Writer()
 # wr.addUser("poem", "azerty")
+# wr.addUser("nothisisjohn", "dvorak")
+# wr.addUser("professorxwing", "colemak")
 dl = Downloader()
-# num = 15181 
-# info = dl.getInfo("nothisisjohn", num)
-# addRace("nothisisjohn", info["text"], info["typedText"], num)
-# time.sleep(2.1)
-badRaces = [167761]
-for race in badRaces:
-    print(race)
-    info = dl.getInfo("poem", race)
-    addRace("poem", info["text"], info["typedText"], race, False)
-    time.sleep(2.1)
+    
+
+badRaces = [["professorxwing", 2407], ["poem", 163348]]
+badRaces = [["poem", 163348]]
+count = 1
+for user, race in badRaces:
+    startTime = time.time()
+    print(f"{user} - {race}")
+    count += 1
+    info = dl.getInfo(user, race)
+    addRace(user, info["text"], info["typedText"], race, False)
+    sleepTime = max(startTime + 2.32 - time.time(), 0)
+    if sleepTime == 0:
+        print(f"weird sleep time - {user} {race}")
+    else:
+        time.sleep(sleepTime)
+# maxRace = {"nothisisjohn": 15225, "poem": 168160, "professorxwing": 7171}
+# users = ["nothisisjohn", "poem", "professorxwing"]
+# endTime = time.time() + 60 * 60
+# count = 1
+# while time.time() < endTime:
+#     startTime = time.time()
+#     user = users[count % len(users)]
+#     race = random.randrange(maxRace[user] - 5000, maxRace[user])
+#     if count % 10 == 0:
+#         print(f"{count} {int((endTime - time.time()) / 60)} m")
+#     count += 1
+#     info = dl.getInfo(user, race)
+#     addRace(user, info["text"], info["typedText"], race)
+#     sleepTime = max(startTime + 2.32 - time.time(), 0)
+#     if sleepTime == 0:
+#         print(f"weird sleep time - {user} {race}")
+#     else:
+#         time.sleep(sleepTime)
 wr.con.close()

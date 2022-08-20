@@ -17,9 +17,7 @@ class Formatter:
         typingLog = self.removeUnicode(typingLog)
         typingLog = self.splitTypingLog(typingLog)
         typingLog = self.group(typingLog, text)
-#         typingLog = self.splitDoubles(typingLog)
         typingLog = self.cropEnd(text[-1], typingLog)
-#         typingLog = self.separate(typingLog)
         typingLog = self.addTypos(text, typingLog)
         return typingLog
 
@@ -82,6 +80,21 @@ class Formatter:
                 i += 1
                 total += 1
             return msL 
+        def checkWord(curWord, goalWord):
+            if len(curWord) < len(goalWord):
+                return False
+            i = 0
+            for goal in goalWord:
+                if curWord[i][0] != goal:
+                    return False
+                i += 1 
+            return True
+        def removeTypo(curWord, typo):
+            for i in range(len(curWord) - 1, -1, -1):
+                if curWord[i][0] == typo:
+                    del curWord[i]
+                    return curWord
+            return curWord
 
         words = [w + " " for w in text.split()]
         words[-1] = words[-1][:-1]
@@ -94,45 +107,34 @@ class Formatter:
             if not item.isnumeric():
                 msPerKey = getMSPerKey(ms, item)
                 newEntry = self.getCharacters(msPerKey, item, curWord)
-                groupings += newEntry
                 for c in newEntry:
+                    wordIndex = c[3]
+                    del c[3]
                     if c[2]:
-                        curWord.append(c[0])
+                        if wordIndex != -1:
+                            insertIndex = curWord[c[-1]][1] - 1
+                            print(f"INSERTINDEX: {insertIndex} - WORDINDEX: {wordIndex}")
+                            curWord.insert(wordIndex, [c[0], wordIndex])
+                            groupings.insert(insertIndex, c)
+                            print(f"\n{groupings[-30:]}\n")
+                        else:
+                            curWord.append([c[0], len(groupings)])
+                            groupings.append(c)
                     else:
-                        if c[0] in curWord:
-                            curWord.reverse()
-                            curWord.remove(c[0])
-                            curWord.reverse()
-                if (len(curWord) >= len(goalWord) and
-                        "".join(curWord)[:len(goalWord)] == goalWord):
+                        groupings.append(c) 
+                        removeTypo(curWord, c[0])
+                if checkWord(curWord, goalWord): 
                     curWord = curWord[len(goalWord):]
                     goalWord = words.pop(0)
             ms = item
-        
-        return groupings
 
-#         groupings = []
-#         prev = ""
-#         for item in typingLog:
-#             if not item.isnumeric():
-#                 group = self.getCharacter(prev, item)
-#                 if group[0] != "*#*":
-#                     groupings.append(group)
-#                 else:
-#                     # highlight + replace - delete last character of previous word
-#                     group[0] = groupings[-1][0][-1]
-#                     groupings.append(group[:3])
-#                     groupings.append(group[3:])
-#                     print(group)
-#                     print(groupings[-10:])
-#                     print("---")
-#             prev = item
-#         return groupings
+        return groupings
 
     def getCharacters(self, ms, entry, curWord):
         """
         Takes the number of ms and raw character information and turns it to
-        [character(s) typed, ms, typed/deleted (1/0)]
+        [character(s) typed, ms, typed/deleted (1/0), -1 if the char is in
+        order, else the index that it should be inserted]
         NOTE: Highlighting one character and replacing it looks weird
         (ex: view-source:https://data.typeracer.com/pit/result?id=|tr:hi_i_am_epic|1140)
         "1$l"
@@ -142,6 +144,7 @@ class Formatter:
         I am not going to account for it right now.
         This special case is indicated by the 0th index being "*#*"
         """
+        print(f"{ms} - |{entry}| - {curWord}")
         def getIndex(e, i):
             index = ""
             while i >= 0 and e[i].isnumeric():
@@ -155,58 +158,28 @@ class Formatter:
         numDeleted = 0
         while i < length:
             if entry[i] == "+":
-                res.append([entry[i + 1], ms.pop(), 1])
+                wordIndex = getIndex(entry, i - 1)
+                if wordIndex + 1 == len(curWord) and "--" not in entry and "+-" not in entry:
+                    end.append([entry[i + 1], ms.pop(), 1, -1])
+                elif wordIndex < len(curWord):
+                    res.append([entry[i + 1], ms.pop(), 1, wordIndex])
+                else:
+                    res.append([entry[i + 1], ms.pop(), 1, -1])
                 i += 2
             elif entry[i] == "-":
-                res.append([entry[i + 1], ms.pop(), 0])
+                res.append([entry[i + 1], ms.pop(), 0, -1])
                 numDeleted += 1
                 i += 2
             elif entry[i] == "$":
                 replacedChar = curWord[getIndex(entry, i - 1) + numDeleted]
-                end.append([entry[i + 1], ms.pop(), 1])
-                res.append([replacedChar, ms.pop(), 0])
+                end.append([entry[i + 1], ms.pop(), 1, -1])
+                res.append([replacedChar, ms.pop(), 0, -1])
                 i += 2
             else:
                 i += 1
         res += end
+        print(f"{res}\n{'-'*16}\n")
         return res
-#         ms = int(ms)
-#         typed = re.search("^\d{1,2}\+", char)
-#         replace = re.search("^\d{1,2}\$", char)
-#         if typed:
-#             return [char[typed.span()[1]:], ms, 1]
-#         if replace:
-#             if ms % 2 == 0:
-#                 msDel, msAdd = ms // 2, ms // 2
-#             else:
-#                 msDel, msAdd = (ms // 2 + 1), ms // 2
-#             return ["*#*", msDel, 0, char[replace.span()[1]:], msAdd, 1]
-#         else:
-#             return ["".join(re.split("\d{1,2}\-", char)), ms, 0]
-
-    def splitDoubles(self, log):
-        """
-        Splits character sequences that are mashed together.
-        Ex: 3+b,124,!!!4+ 5+t!!!,84,3,47,1+h
-        https://data.typeracer.com/pit/result?id=|tr:hi_i_am_epic|1138
-        Triple split: https://data.typeracer.com/pit/result?id=|tr:nothisisjohn|14785
-        (when I type "tearing")
-        """
-        newLog = []
-        for c in log:
-            if re.search(".\d[+-]", c[0]):
-                chars = c[0][0] # create list of typed characters in the log
-                # first character is always typed
-                for i, char in enumerate(c[0][1:-1], start = 1):
-                    # look add characters that come after a + or -
-                    # But not if it is the second character in a row that is
-                    # + or - (because that indicates a typed + or -)
-                    if char in "+-" and c[0][i - 1] not in "+-":
-                        chars += c[0][i + 1]
-                newLog.append([chars, c[1], c[2]])
-            else:
-                newLog.append(c)
-        return newLog
 
     def cropEnd(self, lastChar, log):
         """
@@ -223,26 +196,6 @@ class Formatter:
                 log[i][0] = log[i][0][:endIndex + 1]
                 return log
             i -= 1
-
-    def separate(self, typingLog):
-        """
-        Separates entries that are combined
-        ex: [['es', 77, 1], ...]
-                     VVV
-            [['e', 77, 1], ['s', 0, 1]]
-        """
-        newLog = []
-        for e in typingLog:
-            if len(e[0]) == 1:
-                newLog.append(e)
-            else:
-                extraChars = e[0][1:]
-                typed = e[2]
-                e[0] = e[0][:1]
-                newLog.append(e)
-                for c in extraChars:
-                    newLog.append([c, 0, typed])
-        return newLog
 
     def addTypos(self, text, log):
         """
