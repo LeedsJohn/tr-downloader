@@ -39,7 +39,6 @@ class Downloader:
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser")
         raceText = self.processRaceText(self.findRaceText(soup))
-        print(raceText)
         typingLog = self.findTypingLog(soup)
         typingLog = self.formatter.format(raceText, typingLog)
         date = self.findDate(soup)
