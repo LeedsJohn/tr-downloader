@@ -16,36 +16,6 @@ class Downloader:
     def __init__(self):
         self.formatter = fm.Formatter()
     
-    def download(self, username, startIndex, endIndex):
-        raceLogs = self.openRaceLogs(username)
-        raceNum = startIndex
-        missingCount = 0
-        while raceNum <= endIndex:
-            print(f"{'-'*16}\n{raceNum}")
-            if str(raceNum) in raceLogs:
-                raceNum += 1
-                continue
-            info = self.getInfo(username, raceNum)
-            if info == "Missing":
-                missingCount += 1
-                raceNum += 1
-                if missingCount == 10:
-                    # end if 10 consecutive missing races
-                    break
-            else:
-                missingCount = 0
-
-            print(f"Text: {info['text'][:min(100, len(info['text']))]}")
-            print(f"Speed: {info['unlagSpeed']}, Accuracy: {info['accuracy']}")
-            print(f"{info['date']}")
-            raceLogs[raceNum] = info
-            if raceNum % 25 == 0:
-                self.saveRaceLogs(username, raceLogs)
-            raceNum += 1
-            time.sleep(2.01)
-        self.saveRaceLogs(username, raceLogs)
-
-
     def getInfo(self, username, raceIndex):
         """
         Download a Type Racer race
@@ -68,7 +38,8 @@ class Downloader:
         url = f"https://data.typeracer.com/pit/result?id=|tr:{username}|{raceIndex}"
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser")
-        raceText = self.processRaceText(soup.find(class_="fullTextStr").text)
+        raceText = self.processRaceText(self.findRaceText(soup))
+        print(raceText)
         typingLog = self.findTypingLog(soup)
         typingLog = self.formatter.format(raceText, typingLog)
         date = self.findDate(soup)
@@ -84,14 +55,29 @@ class Downloader:
                 "typedText": typingLog}
 
     def processRaceText(self, text):
-        escapeChars = ['\n', '\b', '\f', '\r', '\t', '\v']
-        text = [c if c not in escapeChars else " " for c in text] # remove escape characters
-        newText = [text[0]]
-        for c in text[1:]:
-            if not (newText[-1] == " " and c == " "):
-                newText.append(c)
-        return "".join(newText).strip()
+        raceText = []
+        for i, c in enumerate(text):
+            if not c.isnumeric():
+                raceText.append(c)
+            elif len(raceText) >= 2 and raceText[-2:] == ["\\", "b"]:
+                del raceText[-2:]
+                raceText.append(c)
 
+        return "".join(raceText)
+
+    def findRaceText(self, soup):
+        scripts = soup.find_all('script')
+        for script in scripts:
+            if "var typingLog" in script.text:
+                text = script.text
+                beginning = 3
+                commaCount = 0
+                while commaCount < 3:
+                    if text[beginning] == ",":
+                        commaCount += 1
+                    beginning += 1
+                end = text.find("|")
+                return text[beginning:end]
 
     def findTypingLog(self, soup):
         scripts = soup.find_all('script')
