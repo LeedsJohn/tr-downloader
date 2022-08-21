@@ -51,20 +51,20 @@ def addWords(uid, text, log, num, wr, re):
     word = ""
     for e in log[start:]:
         time += e[1]
-        if e[2]:
-            cur += e[0]
-            word += e[0]
-        else:
-            cur = removeTypo(cur, e[0])
-            word = removeTypo(word, e[0])
-            typo = True
-        if cur == text[:i]:
-            if i == len(text) or text[i] == " ":
-                wr.updateWords(uid, word, num, time, typo)
-                time = 0
-                typo = False
-                word = ""
-            i += 1
+#         if e[2]:
+        cur += e[0]
+        word += e[0]
+#         else:
+#             cur = removeTypo(cur, e[0])
+#             word = removeTypo(word, e[0])
+#             typo = True
+#         if cur == text[:i]:
+#             if i == len(text) or text[i] == " ":
+#                 wr.updateWords(uid, word, num, time, typo)
+#                 time = 0
+#                 typo = False
+#                 word = ""
+#             i += 1
     if cur != text:
         print(num)
         print(f"\n CUR: {cur}\nTEXT: {text}")
@@ -134,13 +134,14 @@ dl = Downloader()
 
 badRaces = [["professorxwing", 2407], ["poem", 163348]]
 badRaces = [["poem", 163348]]
+badRaces = [["nothisisjohn", i] for i in range(15263, 15271)]
 count = 1
 for user, race in badRaces:
     startTime = time.time()
     print(f"{user} - {race}")
     count += 1
     info = dl.getInfo(user, race)
-    addRace(user, info["text"], info["typedText"], race, False)
+#     addRace(user, info["text"], info["typedText"], race, False)
     sleepTime = max(startTime + 2.32 - time.time(), 0)
     if sleepTime == 0:
         print(f"weird sleep time - {user} {race}")

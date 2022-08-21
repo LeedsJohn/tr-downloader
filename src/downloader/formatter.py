@@ -13,13 +13,24 @@ import re
 from codecs import decode 
 
 class Formatter:
-    def format(self, text, typingLog):
-        typingLog = self.removeUnicode(typingLog)
-        typingLog = self.splitTypingLog(typingLog)
-        typingLog = self.group(typingLog, text)
-        typingLog = self.cropEnd(text[-1], typingLog)
-        typingLog = self.addTypos(text, typingLog)
-        return typingLog
+    def format(self, text, oldLog, newLog):
+        oldLog = self.getTimings(oldLog)
+        newLog = self.removeUnicode(newLog)
+        newLog = self.splitTypingLog(newLog)
+        log = self.addTypos(oldLog, newLog)
+#         print(log)
+#         print("--------------------------")
+#         for c in log:
+#             if c[2]:
+#                 print(c[0], end = "")
+#             else:
+#                 print(f"\n|{c[0]}|")
+#         print("--------------------------\n")
+        return log
+#         typingLog = self.group(typingLog, text)
+#         typingLog = self.cropEnd(text[-1], typingLog)
+#         typingLog = self.addTypos(text, typingLog)
+#         return typingLog
 
     def removeUnicode(self, typingLog):
         """
@@ -54,6 +65,64 @@ class Formatter:
                 i += 1
         return splitLog
     
+    def getTimings(self, oldLog):
+        log = []
+        num = ""
+        for i, c in enumerate(oldLog):
+            if len(log) >= 2 and log[-2][0] == "\\" and log[-1][0] == "b":
+                del log[-2:]
+                log.append([c])
+                num = ""
+            elif not c.isnumeric():
+                if num:
+                    log[-1].append(int(num))
+                log.append([c])
+                num = ""
+            else:
+                num += c
+        log[-1].append(int(num))
+        return log
+
+    def addTypos(self, oldLog, newLog):
+        cumOldLog = [oldLog[0][1]]
+        print(f"OLDLOG: {oldLog}\n\n{newLog}")
+        for i, bruh in enumerate(oldLog):
+            if len(bruh) != 2:
+                print(oldLog[:i + 4])
+        for _, t in oldLog[1:]:
+            cumOldLog.append(cumOldLog[-1] + t)
+        splitNewLog = []
+        for entry in newLog:
+            added = False
+            cur = ""
+            for c in entry:
+                cur += c
+                if len(cur) >= 2 and cur[-2] == "+":
+                    splitNewLog.append(cur)
+                    cur = ""
+            if cur:
+                splitNewLog.append(cur)
+        newSum = 0
+        oldLogIndex = 0
+        typo = False
+        i = 0
+        for c in splitNewLog:
+            if c.isnumeric():
+                newSum += int(c)
+                continue
+            if newSum == cumOldLog[i]:
+                oldLog[i].append(0 if typo else 1)
+                typo = False
+                i += 1
+            else:
+                typo = True
+        
+        if i == len(oldLog):
+            print("GOOD")
+        else:
+            print("BAD!")
+        return oldLog
+
     def group(self, typingLog, text):
         """
         Splits the typing log into a list in the format
@@ -197,7 +266,7 @@ class Formatter:
                 return log
             i -= 1
 
-    def addTypos(self, text, log):
+    def addTyposOLD(self, text, log):
         """
         Adds in the typo indicator to each entry
         1 if the character was properly typed / deleted

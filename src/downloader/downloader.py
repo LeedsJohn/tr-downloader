@@ -38,33 +38,42 @@ class Downloader:
         url = f"https://data.typeracer.com/pit/result?id=|tr:{username}|{raceIndex}"
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser")
-        raceText = self.processRaceText(self.findRaceText(soup))
-        typingLog = self.findTypingLog(soup)
-        typingLog = self.formatter.format(raceText, typingLog)
+        raceText = self.processRaceText(self.findOldLog(soup))
+        newLog = self.findNewLog(soup)
+        newLog = self.formatter.format(raceText, self.findOldLog(soup), newLog)
         date = self.findDate(soup)
         textID = self.findTextID(soup)
-        time = self.findTime(typingLog)
+        time = self.findTime(newLog)
         accuracy = self.findAccuracy(soup)
         registeredSpeed = self.findRegisteredSpeed(soup)
         unlagSpeed, adjustSpeed = self.findSpeeds(time, len(raceText),
-                typingLog[0][1])
+                newLog[0][1])
+
+        print(newLog)
+        bruh = ""
+        for c in newLog:
+            bruh += c[0]
+        print(bruh)
+        print(raceText)
+        print(f"DOES RECORDED EQUAL RACETXT? {bruh == raceText}")
+
         return {"textID": textID, "date": date, "accuracy": accuracy, 
                 "registeredSpeed": registeredSpeed, "unlagSpeed": unlagSpeed,
                 "adjustSpeed": adjustSpeed, "time": time, "text": raceText,
-                "typedText": typingLog}
+                "typedText": newLog}
 
     def processRaceText(self, text):
         raceText = []
         for i, c in enumerate(text):
-            if not c.isnumeric():
-                raceText.append(c)
-            elif len(raceText) >= 2 and raceText[-2:] == ["\\", "b"]:
+            if len(raceText) >= 2 and raceText[-2:] == ["\\", "b"]:
                 del raceText[-2:]
+                raceText.append(c)
+            elif not c.isnumeric():
                 raceText.append(c)
 
         return "".join(raceText)
 
-    def findRaceText(self, soup):
+    def findOldLog(self, soup):
         scripts = soup.find_all('script')
         for script in scripts:
             if "var typingLog" in script.text:
@@ -78,7 +87,7 @@ class Downloader:
                 end = text.find("|")
                 return text[beginning:end]
 
-    def findTypingLog(self, soup):
+    def findNewLog(self, soup):
         scripts = soup.find_all('script')
         for script in scripts:
             if "var typingLog" in script.text:
