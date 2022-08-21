@@ -37,7 +37,8 @@ def addRace(username, text, log, num, avoidDuplicates = True):
         writer.updateChars(uid, entry[0], num, entry[1], typo)
         writer.updateChar_pairs(uid, cp, num, entry[1], typo)
         if entry[0] == " " or i + 1 == len(log):
-            writer.updateWords(uid, word[0], num, word[1], word[2])
+            if word[0]:
+                writer.updateWords(uid, word[0], num, word[1], word[2])
             word = [" ", entry[1], typo]
 
     writer.cur.execute("commit")
@@ -45,52 +46,65 @@ def addRace(username, text, log, num, avoidDuplicates = True):
     reader.con.close()
 
 wr = Writer()
-# wr.addUser("poem", "azerty")
-# wr.addUser("nothisisjohn", "dvorak")
-# wr.addUser("professorxwing", "colemak")
+rd = Reader()
+wr.addUser("poem", "azerty")
+wr.addUser("nothisisjohn", "dvorak")
+wr.addUser("professorxwing", "colemak")
 dl = Downloader()
     
-
-badRaces = [["poem", 163523]]
+badRaces = None
+# badRaces = [["poem", 168158]]
 count = 1
-for user, race in badRaces:
+if badRaces:
+    for user, race in badRaces:
+        startTime = time.time()
+        print(f"{user} - {race}", end=" | ")
+        count += 1
+        info = dl.getInfo(user, race)
+        errors = 0
+        for c in info["typingLog"]:
+            if not c[2]:
+                errors += 1
+        print(f"Errors: {errors}")
+        if errors >= 20:
+            badString = "++++++++\n" * 8
+            print(badString)
+        addRace(user, info["text"], info["typingLog"], race, False)
+        sleepTime = max(startTime + 2.32 - time.time(), 0)
+        if sleepTime == 0:
+            print(f"weird sleep time - {user} {race}")
+        else:
+            time.sleep(sleepTime)
+
+maxRace = {"nothisisjohn": 15225, "poem": 168160, "professorxwing": 7171}
+users = ["nothisisjohn", "poem", "professorxwing"]
+endTime = 0
+endTime = time.time() + 20 * 60
+count = 1
+while time.time() < endTime:
     startTime = time.time()
-    print(f"{user} - {race}", end=" | ")
+    user = users[count % len(users)]
+    while True:
+        race = random.randrange(maxRace[user] - 5000, maxRace[user])
+        if not rd.completedRace(user, race):
+            break
+    if count % 1 == 0:
+        print(f"{count} {int((endTime - time.time()) / 60)} m {user} {race}", end = " | ")
     count += 1
+    infoTime = time.time()
     info = dl.getInfo(user, race)
+    infoTime = time.time() - infoTime
     errors = 0
-    for c in info["typedText"]:
+    for c in info["typingLog"]:
         if not c[2]:
             errors += 1
     print(f"Errors: {errors}")
-    addRace(user, info["text"], info["typedText"], race, False)
-    sleepTime = max(startTime + 2.32 - time.time(), 0)
+    addRace(user, info["text"], info["typingLog"], race)
+    sleepTime = max(startTime + 2.35 - time.time(), 0)
     if sleepTime == 0:
         print(f"weird sleep time - {user} {race}")
+        print(f"download time: {infoTime}")
     else:
         time.sleep(sleepTime)
-
-# maxRace = {"nothisisjohn": 15225, "poem": 168160, "professorxwing": 7171}
-# users = ["nothisisjohn", "poem", "professorxwing"]
-# endTime = time.time() + 0.51 * 60
-# count = 1
-# while time.time() < endTime:
-#     startTime = time.time()
-#     user = users[count % len(users)]
-#     race = random.randrange(maxRace[user] - 5000, maxRace[user])
-#     if count % 1 == 0:
-#         print(f"{count} {int((endTime - time.time()) / 60)} m {user} {race}", end = " | ")
-#     count += 1
-#     info = dl.getInfo(user, race)
-#     errors = 0
-#     for c in info["typedText"]:
-#         if not c[2]:
-#             errors += 1
-#     print(f"Errors: {errors}")
-#     addRace(user, info["text"], info["typedText"], race)
-#     sleepTime = max(startTime + 2.35 - time.time(), 0)
-#     if sleepTime == 0:
-#         print(f"weird sleep time - {user} {race}")
-#     else:
-#         time.sleep(sleepTime)
 wr.con.close()
+rd.con.close()
