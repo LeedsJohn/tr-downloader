@@ -85,10 +85,6 @@ class Formatter:
 
     def addTypos(self, oldLog, newLog):
         cumOldLog = [oldLog[0][1]]
-        print(f"OLDLOG: {oldLog}\n\n{newLog}")
-        for i, bruh in enumerate(oldLog):
-            if len(bruh) != 2:
-                print(oldLog[:i + 4])
         for _, t in oldLog[1:]:
             cumOldLog.append(cumOldLog[-1] + t)
         splitNewLog = []
@@ -114,6 +110,11 @@ class Formatter:
                 oldLog[i].append(0 if typo else 1)
                 typo = False
                 i += 1
+            elif newSum > cumOldLog[i]:
+                while newSum > cumOldLog[i]:
+                    oldLog[i].append(0)
+                    i += 1
+                typo = False
             else:
                 typo = True
         

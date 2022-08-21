@@ -48,15 +48,6 @@ class Downloader:
         registeredSpeed = self.findRegisteredSpeed(soup)
         unlagSpeed, adjustSpeed = self.findSpeeds(time, len(raceText),
                 newLog[0][1])
-
-        print(newLog)
-        bruh = ""
-        for c in newLog:
-            bruh += c[0]
-        print(bruh)
-        print(raceText)
-        print(f"DOES RECORDED EQUAL RACETXT? {bruh == raceText}")
-
         return {"textID": textID, "date": date, "accuracy": accuracy, 
                 "registeredSpeed": registeredSpeed, "unlagSpeed": unlagSpeed,
                 "adjustSpeed": adjustSpeed, "time": time, "text": raceText,
