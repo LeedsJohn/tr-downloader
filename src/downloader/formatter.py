@@ -83,8 +83,7 @@ class Formatter:
                 log.append([c])
                 num = ""
             else:
-                num += c
-
+                num += c 
         log[-1].append(int(num))
         return log
 
@@ -115,6 +114,8 @@ class Formatter:
                 oldLog[i].append(0 if typo else 1)
                 typo = False
                 i += 1
+                if i == len(cumOldLog): # prevent errors from extra characters in old log
+                    break
             elif newSum > cumOldLog[i]:
                 while newSum > cumOldLog[i]:
                     oldLog[i].append(0)
