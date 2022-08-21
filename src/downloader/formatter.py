@@ -68,10 +68,14 @@ class Formatter:
     def getTimings(self, oldLog):
         log = []
         num = ""
+        # TODO is there a better way to handle special cases? (nums, apostrophes)
         for i, c in enumerate(oldLog):
             if len(log) >= 2 and log[-2][0] == "\\" and log[-1][0] == "b":
                 del log[-2:]
                 log.append([c])
+                num = ""
+            elif c == '"': # " is escaped with a \
+                log[-1] == '"'
                 num = ""
             elif not c.isnumeric():
                 if num:
@@ -80,6 +84,7 @@ class Formatter:
                 num = ""
             else:
                 num += c
+
         log[-1].append(int(num))
         return log
 

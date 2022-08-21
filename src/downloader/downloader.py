@@ -54,11 +54,14 @@ class Downloader:
                 "typedText": newLog}
 
     def processRaceText(self, text):
+        # TODO - get rid of this, just take it from oldLog
         raceText = []
         for i, c in enumerate(text):
             if len(raceText) >= 2 and raceText[-2:] == ["\\", "b"]:
                 del raceText[-2:]
                 raceText.append(c)
+            elif c == '"': # " is escaped with a \
+                raceText[-1] == '"'
             elif not c.isnumeric():
                 raceText.append(c)
 
