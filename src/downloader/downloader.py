@@ -38,34 +38,27 @@ class Downloader:
         url = f"https://data.typeracer.com/pit/result?id=|tr:{username}|{raceIndex}"
         page = requests.get(url)
         soup = BeautifulSoup(page.content, "html.parser")
-        raceText = self.processRaceText(self.findOldLog(soup))
         newLog = self.findNewLog(soup)
-        newLog = self.formatter.format(raceText, self.findOldLog(soup), newLog)
+        oldLog = self.findOldLog(soup)
+        typingLog = self.formatter.format(oldLog, newLog)
+        raceText = self.getRaceText(typingLog)
         date = self.findDate(soup)
         textID = self.findTextID(soup)
-        time = self.findTime(newLog)
+        time = self.findTime(typingLog)
         accuracy = self.findAccuracy(soup)
         registeredSpeed = self.findRegisteredSpeed(soup)
         unlagSpeed, adjustSpeed = self.findSpeeds(time, len(raceText),
-                newLog[0][1])
+                typingLog[0][1])
         return {"textID": textID, "date": date, "accuracy": accuracy, 
                 "registeredSpeed": registeredSpeed, "unlagSpeed": unlagSpeed,
                 "adjustSpeed": adjustSpeed, "time": time, "text": raceText,
-                "typedText": newLog}
+                "typingLog": typingLog}
 
-    def processRaceText(self, text):
-        # TODO - get rid of this, just take it from oldLog
-        raceText = []
-        for i, c in enumerate(text):
-            if len(raceText) >= 2 and raceText[-2:] == ["\\", "b"]:
-                del raceText[-2:]
-                raceText.append(c)
-            elif c == '"': # " is escaped with a \
-                raceText[-1] == '"'
-            elif not c.isnumeric():
-                raceText.append(c)
-
-        return "".join(raceText)
+    def getRaceText(self, log):
+        text = []
+        for c in log:
+            text.append(c[0])
+        return "".join(text)
 
     def findOldLog(self, soup):
         scripts = soup.find_all('script')
