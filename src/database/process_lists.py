@@ -12,9 +12,15 @@ MAX_CHAR = 1000
 # ----------------------
 I_SPL = chr(8592) # inner split - leftward arrow
 O_SPL = chr(8593) # outer split - upward arrow
+W_SPL = chr(8595) # word split - downward arrow
 
-        
 def toString(l):
+    if not l:
+        return ""
+    if not isinstance(l[0][1], int):
+        for i in range(len(l)):
+            l[i][1] = [str(n) for n in l[i][1]]
+            l[i][1] = W_SPL.join(l[i][1])
     log = [[str(c) for c in e] for e in l]
     log = [I_SPL.join(e) for e in log]
     log = O_SPL.join(log)
@@ -23,15 +29,18 @@ def toString(l):
 def toList(s):
     if not s:
         return []
-    def toInt(c):
-        if c.isnumeric():
-            return int(c)
-        return c
+    def finalStep(entry):
+        entry[0] = int(entry[0])
+        if W_SPL in entry[1]:
+            entry[1] = [int(n) for n in entry[1].split(W_SPL)]
+        else:
+            entry[1] = int(entry[1])
+        return entry
     log = s.split(O_SPL)
     log = [e.split(I_SPL) for e in log]
-    log = [[toInt(c) for i, c in enumerate(e) if i <= 3] for e in log]
     if not log[0][0]:
         return []
+    log = [finalStep(e) for e in log]
     return log
 
 def addToLog(log, dataType, newEntry):
