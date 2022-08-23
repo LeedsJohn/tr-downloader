@@ -78,6 +78,7 @@ class Writer:
             query = f"""INSERT INTO {table} (user_id, {col}, num_typed, time,
                        num_typo, typo_time, log)
                        VALUES (?, ?, ?, ?, ?, ?, ?);"""
+            time = time[0] if table != "words" else pl.splitTimes(time)
             if not typo:
                 data = [uid, word, 1, time, 0, 0, pl.toString([entry])]
             else:
@@ -85,15 +86,21 @@ class Writer:
             self.cur.execute(query, data)
 #             self.con.commit()
             return
-        
         data = pl.addToLog(oldRow[6], col, entry)
+        if table == "words":
+            data[1] = pl.sumTimes(oldRow[3], data[1])
+            data[2] = pl.sumTimes(oldRow[5], data[2])
+        else:
+            data[1] = int(data[1]) if data[1] else 0
+            data[2] = int(data[2]) if data[2] else 0
+            data[1] += int(oldRow[3])
+            data[2] += int(oldRow[5])
         query = f"""UPDATE {table}
                     SET num_typed = num_typed + ?,
-                        time = time + ?,
+                        time = ?,
                         num_typo = num_typo + ?,
-                        typo_time = typo_time + ?,
+                        typo_time = ?,
                         log = ?
                     WHERE user_id = ? AND {col} = ?;"""
         data = [data[3], data[1], data[4], data[2], data[0], uid, word]
-        self.cur.execute(query, data)
-#         self.con.commit()
+        self.cur.execute(query, data) #         self.con.commit()
