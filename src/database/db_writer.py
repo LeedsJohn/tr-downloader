@@ -45,23 +45,18 @@ class Writer:
         """
         Increments global user stats for a race
         """
+        username = username.lower()
         query = """UPDATE users
-                   SET num_chars = num_chars + ?,
+                   SET num_races = num_races + 1,
+                   num_chars = num_chars + ?,
                    num_typo = num_typo + ?,
                    type_time = type_time + ?,
                    typo_time = typo_time + ?,
                    start_time = start_time + ?
-                   WHERE username = ?"""
+                   WHERE username = ?;"""
         data = [num_chars, num_typo, type_time, typo_time, start_time, username]
         self.cur.execute(query, data)
 
-    def incrementRacecount(self, username):
-        username = username.lower()
-        query = """UPDATE users
-                   SET num_races = num_races + 1
-                   WHERE username = ?;"""
-        self.cur.execute(query, [username])
-#         self.con.commit()
 
     def updateWords(self, uid, word, race_index, time, typo = False):
         self.updateStats("words", uid, word, race_index, time, typo)
