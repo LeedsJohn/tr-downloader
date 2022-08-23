@@ -111,10 +111,6 @@ class Formatter:
             else:
                 typo = True
         
-        if i == len(oldLog):
-            print("GOOD")
-        else:
-            print("BAD!")
         return oldLog
 
     def printRace(self, pattern):

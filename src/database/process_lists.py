@@ -49,9 +49,9 @@ def listTimes(times):
     return [int(n) for n in nums]
 
 def sumTimes(t1, t2):
-    if not t1:
+    if not t1 or t1 == "0":
         return t2
-    if not t2:
+    if not t2 or t2 == "0":
         return t1
     t1, t2 = listTimes(t1), listTimes(t2)
     for i in range(len(t2)):
