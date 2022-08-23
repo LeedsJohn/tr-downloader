@@ -14,7 +14,7 @@ TABLES = {"users":
         "INTEGER"], ["last_action", "INTEGER"], ["downloaded", "TEXT"]], 
         "words":
         [["user_id", "word"], ["user_id", "INTEGER"], ["word", "TEXT"],
-        ["num_typed", "INTEGER"], ["time", "INTEGER"],
+        ["num_typed", "INTEGER"], ["time", "TEXT"],
         ["num_typo", "INTEGER"], ["typo_time", "INTEGER"], ["log", "TEXT"]],
         "char_pairs":
         [["user_id", "char_pair"], ["user_id", "INTEGER"], ["char_pair", "TEXT"],
