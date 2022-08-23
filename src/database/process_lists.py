@@ -6,8 +6,7 @@ process_lists.py
 Script to handle changing text between a list and text
 """
 # how much data to store
-# MAX_WORD = 100
-MAX_WORD = 5
+MAX_WORD = 100
 MAX_CP = 250
 MAX_CHAR = 1000
 # ----------------------
