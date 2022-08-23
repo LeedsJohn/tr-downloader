@@ -11,6 +11,25 @@ from downloader.downloader import Downloader
 from database.db_writer import Writer
 from database.db_reader import Reader
 
+def getGlobalStats(log):
+    """
+    Returns [start time, num_chars, num_typo, type_time, typo_time]
+    """
+    num_chars, num_typo, type_time, typo_time = 0, 0, 0, 0
+    if log[0][2] == 0:
+        num_typo = 1
+    else:
+        num_chars = 1
+    start_time = log[0][1]
+    for e in log[1:]:
+        if e[2] == 0:
+            num_typo += 1
+            typo_time += e[1]
+        else:
+            num_chars += 1
+            type_time += e[1]
+    return [start_time, num_chars, num_typo, type_time, typo_time]
+    
 def addRace(username, text, log, num, avoidDuplicates = True):
     writer = Writer()
     writer.con.isolation_level = None
@@ -21,25 +40,28 @@ def addRace(username, text, log, num, avoidDuplicates = True):
         reader.con.close()
         print(f"{username} {num} - already added")
         return False
-    writer.incrementRacecount(username)
+    
+    stats = getGlobalStats(log)
+    writer.incrementGlobalStats(username, stats[1], stats[2], stats[3],
+            stats[4], stats[0])
     writer.addRaceNum(username, num)
     uid = reader.getUserID(username)
-    word = ["", 0, False]
+    word = None
     countingWord = False
     for i, entry in enumerate(log[1:], start = 1):
         typo = False if entry[2] else True 
         cp = log[i - 1][0] + entry[0]
-        if word[0] and entry[0] != " ":
+        if word and entry[0] != " ":
             word[0] += entry[0]
-            word[1] += entry[1]
+            word[1].append(entry[1])
             if not entry[2]:
                 word[2] = True
-        writer.updateChars(uid, entry[0], num, entry[1], typo)
-        writer.updateChar_pairs(uid, cp, num, entry[1], typo)
+        writer.updateChars(uid, entry[0], num, [entry[1]], typo)
+        writer.updateChar_pairs(uid, cp, num, [entry[1]], typo)
         if entry[0] == " " or i + 1 == len(log):
-            if word[0]:
+            if word:
                 writer.updateWords(uid, word[0], num, word[1], word[2])
-            word = [" ", entry[1], typo]
+            word = [" ", [entry[1]], typo]
 
     writer.cur.execute("commit")
     writer.con.close()
@@ -53,7 +75,8 @@ wr.addUser("professorxwing", "colemak")
 dl = Downloader()
     
 badRaces = None
-# badRaces = [["poem", 168158]]
+badRaces = [["nothisisjohn", 15310]]
+badRaces = [["nothisisjohn", 15018] for n in range(10)]
 count = 1
 if badRaces:
     for user, race in badRaces:
@@ -79,7 +102,7 @@ if badRaces:
 maxRace = {"nothisisjohn": 15225, "poem": 168160, "professorxwing": 7171}
 users = ["nothisisjohn", "poem", "professorxwing"]
 endTime = 0
-endTime = time.time() + 20 * 60
+# endTime = time.time() + 20 * 60
 count = 1
 while time.time() < endTime:
     startTime = time.time()
