@@ -10,8 +10,9 @@ import sqlite3
 TABLES = {"users": 
         [["username"], ["username", "TEXT"], ["join_date", "INTEGER"],
         ["layout", "TEXT"], ["num_races", "INTEGER"], ["num_chars", "INTEGER"],
-        ["num_typo", "INTEGER"], ["total_time", "INTEGER"], ["start_time",
-        "INTEGER"], ["last_action", "INTEGER"], ["downloaded", "TEXT"]], 
+        ["num_typo", "INTEGER"], ["type_time", "INTEGER"], , ["typo_time",
+        "INTEGER"], ["start_time", "INTEGER"], ["last_action", "INTEGER"],
+        ["downloaded", "TEXT"]], 
         "words":
         [["user_id", "word"], ["user_id", "INTEGER"], ["word", "TEXT"],
         ["num_typed", "INTEGER"], ["time", "TEXT"],
