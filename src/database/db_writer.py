@@ -39,7 +39,22 @@ class Writer:
                    WHERE username = ?;"""
         self.cur.execute(query, [newRaces, username])
 #         self.con.commit()
-        
+    
+    def incrementGlobalStats(self, username, num_chars, num_typo, type_time,
+            typo_time, start_time):
+        """
+        Increments global user stats for a race
+        """
+        query = """UPDATE users
+                   SET num_chars = num_chars + ?,
+                   num_typo = num_typo + ?,
+                   type_time = type_time + ?,
+                   typo_time = typo_time + ?,
+                   start_time = start_time + ?
+                   WHERE username = ?"""
+        data = [num_chars, num_typo, type_time, typo_time, start_time, username]
+        self.cur.execute(query, data)
+
     def incrementRacecount(self, username):
         username = username.lower()
         query = """UPDATE users
