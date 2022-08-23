@@ -17,13 +17,14 @@ class Writer:
     def addUser(self, username, layout):
         username, layout = username.lower(), layout.lower()
         text = """INSERT INTO users (username, join_date, last_action, layout,
-        num_races, num_chars, num_typo, total_time, start_time, downloaded)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+        num_races, num_chars, num_typo, type_time, typo_time, start_time,
+        downloaded)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
         vals = [username, int(time.time()), int(time.time()), layout, 0, 0, 0,
-                0, 0, None]
+                0, 0, 0, None]
         self.cur.execute(text, vals)
         self.con.commit()
-    
+    # TODO: move to incrementGlobalStats? 
     def addRaceNum(self, username, num):
         username = username.lower()
         def getOldRaces():
