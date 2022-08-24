@@ -6,9 +6,9 @@ process_lists.py
 Script to handle changing text between a list and text
 """
 # how much data to store
-MAX_WORD = 100
-MAX_CP = 250
-MAX_CHAR = 1000
+MAX_WORD = 1000
+MAX_CP = 2500
+MAX_CHAR = 10000
 # ----------------------
 I_SPL = chr(8592) # inner split - leftward arrow
 O_SPL = chr(8593) # outer split - upward arrow
@@ -72,7 +72,13 @@ def addToLog(log, dataType, newEntry):
     def combine(add, sub):
         for i in range(4):
             if i < 2:
-                for j in range(min(len(add[i]), len(sub[i]))):
+                a = len(add[i])
+                b = len(sub[i])
+                if a < b:
+                    add[i] += [0] * (b - a)
+                elif b < a:
+                    sub[i] += [0] * (a - b)
+                for j in range(len(add[i])):
                     add[i][j] += sub[i][j]
             else:
                 add[i] += sub[i]
